@@ -39,6 +39,10 @@ const FPS_WARMUP = 5 // ignore min-fps during scene load
 // standing still deflects everything, bypassing the weave verb. Any E press
 // starts the cooldown; presses during it do nothing and are not counted.
 const DEFLECT_COOLDOWN = 1.5
+// H1-03 density instrument: when > 0, bypass the wave clock and keep this many
+// bullets alive, spiral angles preserved. 0 = normal game. Kept for the mobile
+// re-test at core-loop stage close (H1-03 closed `validated — mobile pending`).
+const DENSITY_TEST = 0
 
 type BulletState = 'live' | 'telegraph' | 'deflected'
 
@@ -135,7 +139,20 @@ export function gameSystem(dt: number) {
   }
 
   // --- Wave clock: same single pattern every wave, no goal, no reward ---
-  if (stats.resting) {
+  if (DENSITY_TEST > 0) {
+    // maintain-N spawner: top up to DENSITY_TEST every frame (H1-03 instrument)
+    let alive = 0
+    for (const b of pool) if (b.active) alive++
+    // top up at most 3/frame so the population staggers into a spread spiral
+    // instead of one expanding cohort ring
+    let topUp = 3
+    while (alive < DENSITY_TEST && topUp > 0) {
+      spawnBullet((spiralAngle * Math.PI) / 180)
+      spiralAngle = (spiralAngle + STEP_DEG) % 360
+      alive++
+      topUp--
+    }
+  } else if (stats.resting) {
     stats.restLeft -= dt
     if (stats.restLeft <= 0) {
       stats.resting = false
