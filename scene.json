@@ -2,8 +2,8 @@
   "ecs7": true,
   "runtimeVersion": "7",
   "display": {
-    "title": "SDK7 Scene Template",
-    "description": "template scene with SDK7",
+    "title": "H1-01 weave+deflect greybox",
+    "description": "Find-the-fun greybox: one repeating bullet pattern, timed deflect. Experiment H1-01.",
     "navmapThumbnail": "images/scene-thumbnail.png",
     "favicon": "favicon_asset"
   },
@@ -16,32 +16,35 @@
   "tags": [],
   "scene": {
     "parcels": [
-      "0,0"
+      "0,0",
+      "0,1",
+      "1,0",
+      "1,1"
     ],
     "base": "0,0"
   },
   "spawnPoints": [
     {
-      "name": "spawn1",
+      "name": "walkway",
       "default": true,
       "position": {
         "x": [
-          0,
-          3
+          15,
+          17
         ],
         "y": [
-          0,
-          0
+          3,
+          3
         ],
         "z": [
-          0,
-          3
+          1.5,
+          2.5
         ]
       },
       "cameraTarget": {
-        "x": 8,
+        "x": 16,
         "y": 1,
-        "z": 8
+        "z": 16
       }
     }
   ],

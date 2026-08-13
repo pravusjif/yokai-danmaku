@@ -1,15 +1,13 @@
-// We define the empty imports so the auto-complete feature works as expected.
-import {} from '@dcl/sdk/math'
+// H1-01 greybox — weave through one repeating bullet pattern + timed deflect.
+// Experiment file: design/01-find-the-fun/H1-01-verb-fun_active.md
 import { engine } from '@dcl/sdk/ecs'
-
-import { changeColorSystem, circularSystem } from './systems'
-import { setupUi } from './ui'
+import { buildArena } from './arena'
+import { setupGame, gameSystem } from './game'
+import { setupUi } from './hud'
 
 export function main() {
-  // Defining behavior. See `src/systems.ts` file.
-  engine.addSystem(circularSystem)
-  engine.addSystem(changeColorSystem)
-
-  // draw UI. Here is the logic to spawn cubes.
+  buildArena()
+  setupGame()
+  engine.addSystem(gameSystem)
   setupUi()
 }

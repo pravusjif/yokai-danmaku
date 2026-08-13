@@ -1,5 +1,7 @@
 # Decision history — append-only, newest first
 
+- 2026-08-13 · Deflect is aimed: the deflected bullet flies where the camera points, not auto-back at the emitter · owner kept it after a look-see — "a good difficulty addition to the core mechanic of deflection"; aim is now part of the deflect verb, so H1-02 must test the aimed version.
+
 - 2026-08-13 · World is "cyberpunk yokai": each round's bullet pattern IS a digital yokai haunting neo-Tokyo's grid · owner's direction; gives round variety an identity and the deflect a meaning without adding mechanics.
 
 - 2026-08-13 · Core verb is dodge + timed deflect (deflected bullets clear holes in the pattern for everyone) · owner picked it over pure-dodge and graze-collect; the deflect gives an active beat and a visible way to help the shared arena.

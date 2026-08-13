@@ -73,7 +73,7 @@ The last thing you see before leaving: [OPEN — the Day-2 reason is designed in
 - **One loop takes:** [OPEN — stage 2; to be measured in the greybox, target 30–90 s per wave]
 - **One session lasts:** [OPEN — stage 2]
 - **Why is the 10th repetition still fun?** [OPEN — stage 2. Candidate sources: other players (shared arena), rising difficulty (tightening waves). Not designed yet — the first repetition is not yet proven.]
-- **Why the FIRST repetition feels good:** reading a wall of glowing bullets, finding the gap, and threading your whole avatar through it — with a deflect that punches a visible hole in the pattern. `[HYPOTHESIS → H1-01]` The deflect timing itself must feel fair, not lucky. `[HYPOTHESIS → H1-02]` A pattern dense enough to read as bullet hell must actually run. `[HYPOTHESIS → H1-03]`
+- **Why the FIRST repetition feels good:** reading a wall of glowing bullets, finding the gap, and threading your whole avatar through it — with a deflect that punches a visible hole in the pattern. The verb held in the greybox: with no score, reward or goal attached, the owner voluntarily played 3 consecutive waves and quit by choice (H1-01 survived, owner self-test, desktop, 2026-08-13). Two conditions proved load-bearing and are now part of the verb: the deflect is **scarce** (1.5 s cooldown — free spam killed the weave entirely) and the telegraph is **honest** (exactly one bullet glows blue: the one E will send back, and only if its path would hit or graze you). Whether the verb pulls players who did not invent it is unmeasured — that is H1-04's fresh-eyes test. `[HYPOTHESIS → H1-01]` The deflect timing itself must feel fair, not lucky — pass-4 rider data: 40/43 intended deflects landed. `[HYPOTHESIS → H1-02]` A pattern dense enough to read as bullet hell must actually run. `[HYPOTHESIS → H1-03]`
 
 ---
 
@@ -183,7 +183,11 @@ The last thing you see before leaving: [OPEN — the Day-2 reason is designed in
 
 **Visual direction.** Ghostwire: Tokyo (rain-slick neon shrine streets, yokai in a modern city) · NieR: Automata's glowing-orb bullet language (fat, slow, readable projectiles) · Akira's Neo-Tokyo night palette. Rendered as stylized PBR with baked lighting, consistent with Genesis Plaza quality. `[agent-decided — owner named the direction ("cyberpunk yokai"); references chosen to match it]`
 
-**Required: at least one image.** `TBD: the first greybox screenshot — the H1-01 build (sunken arena, walkway ring, one pattern mid-bloom) doubles as this image; captured when /pre-prod-proto runs it.`
+**Required: at least one image.**
+
+![H1-01 greybox — sunken arena, walkway ring, one pattern mid-bloom](01-find-the-fun/H1-01-greybox.png)
+
+*Greybox screenshot from the H1-01 build (desktop Explorer, 2026-08-13): the sunken arena with its walkway ring, one spiral pattern mid-bloom around the emitter. Primitives only — the yokai art direction above is not yet built.*
 
 ---
 
@@ -309,7 +313,7 @@ The last thing you see before leaving: [OPEN — the Day-2 reason is designed in
 
 | ID | IF / THEN (falsifiable) | Source section | Cheapest killing test | Status | Verdict / date | Tested on |
 |---|---|---|---|---|---|---|
-| H1-01 | IF the core verb is weave-through-a-bullet-pattern plus a timed deflect, THEN the owner voluntarily replays ≥3 consecutive greybox waves with no score, reward or goal attached | §3 Core Loop | Desktop Explorer greybox, owner self-test, ~30 min build | parked | | — |
+| H1-01 | IF the core verb is weave-through-a-bullet-pattern plus a timed deflect, THEN the owner voluntarily replays ≥3 consecutive greybox waves with no score, reward or goal attached | §3 Core Loop | Desktop Explorer greybox, owner self-test, ~30 min build | survived | kill-check held: 3 voluntary waves, quit by choice (owner self-test) · 2026-08-13 | desktop |
 | H1-02 | IF the deflect window is ≥0.4 s and bullets telegraph clearly, THEN the owner lands ≥7 of 10 intended deflects in a greybox wave | §3 Core Loop | Same greybox as H1-01, owner self-test (mobile-sensitive) | parked | | — |
 | H1-03 | IF a wave renders ~150 simultaneous moving glowing projectiles, THEN the scene holds ≥60 fps in desktop Explorer on recommended hardware | §3 Core Loop | Instrumented desktop greybox, agent-measurable (mobile-sensitive) | parked | | — |
 | H1-04 | IF the spawn frames the arena mid-pattern below the walkway, THEN 4 of 5 first-time testers start dodging within 5 s without being told anything | §2 First Session | H1-01 greybox + 3–5 first-time testers (fresh eyes required) | parked | | — |
