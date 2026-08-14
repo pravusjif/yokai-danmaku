@@ -53,7 +53,7 @@ You spawn on a neon-lit walkway ringing a sunken arena. Below, glowing orbs bloo
 
 You drop in as a new wave starts — wide, slow arcs. You sidestep the first one; a low chime marks the near miss. Then an orb flashes blue as it closes on you — you press, and it ricochets back through the pattern, punching a hole the avatar beside you dives through.
 
-Wave by wave the pattern tightens. You survive your first full round of three waves; the arena rim lights up with the next round's name and a preview of its pattern — visibly denser.
+Wave by wave the pattern tightens, and every deflect — yours and everyone else's — chips the yokai's glowing bar above the pit. Three waves in, the bar shatters and the yokai is banished; the arena rim lights up with the next round's name and a preview of its pattern — visibly denser.
 
 The last thing you see before leaving: [OPEN — the Day-2 reason is designed in §4 at stage 2, then staged back into this beat.]
 
@@ -61,18 +61,26 @@ The last thing you see before leaving: [OPEN — the Day-2 reason is designed in
 
 ## 3. Core Loop
 
-*Stage 1 — resolved at core-mechanic level. The full loop table (cycle length, session length, 10th repetition) matures at stage 2, after the verb is proven.*
+*Stage 2 — loop table resolved 2026-08-14. Three loop-structure claims are parked (H2-01, H2-02, H2-03), all testable in one greybox extension of the H1 build.*
 
 | # | Step (verb) | What the player does | Why do it again? |
 |---|---|---|---|
 | 1 | READ | Watch the incoming bullet pattern and find the gap | Every wave draws a new pattern |
-| 2 | WEAVE | Move your avatar through the gap | [OPEN — stage 2] |
-| 3 | DEFLECT | A timed press bounces one bullet back, clearing a hole in the pattern **for everyone in the arena** | Your deflect visibly helps the players around you |
-| 4 | SURVIVE | Outlast the wave; the next one starts tighter | [OPEN — stage 2] |
+| 2 | WEAVE | Move your avatar through the gap | The gap never opens in the same place — patterns sweep and rotate, so every wave is a new route `[HYPOTHESIS → H2-03]` |
+| 3 | DEFLECT | A timed press ricochets the flashing bullet wherever your camera points — aim is part of the verb (decided 2026-08-13) — clearing a hole in the pattern **for everyone in the arena** | Your deflect visibly helps the players around you — and it is the only thing that damages the yokai |
+| 4 | SURVIVE | Outlast the wave; the next one starts tighter | Empty the yokai's life bar to banish it — the next round summons a denser yokai |
 
-- **One loop takes:** [OPEN — stage 2; to be measured in the greybox, target 30–90 s per wave]
-- **One session lasts:** [OPEN — stage 2]
-- **Why is the 10th repetition still fun?** [OPEN — stage 2. Candidate sources: other players (shared arena), rising difficulty (tightening waves). Not designed yet — the first repetition is not yet proven.]
+**Goal structure (decided 2026-08-14):** each round summons a yokai with a visible life bar. Deflected bullets are the only damage; emptying the bar banishes it, and the next round's yokai attacks denser. The round is **bar-driven**: waves keep coming and tightening until the bar hits zero, with the bar sized so a competently-deflecting crowd banishes in about 3 waves — a crowd that deflects poorly gets a longer, denser round and slides toward the wipe, so bad play *is* the difficulty curve. Deflect is the win verb — the fiction already says why: you throw the yokai's own fury back at it. One risk is parked, not argued: H1-01 proved the verb with deflect as *defense*, and the life bar must not tempt players into camping the 1.5 s cooldown instead of weaving. `[HYPOTHESIS → H2-01]`
+
+**Death rule (decided 2026-08-14):** a hit knocks you out for the rest of the current wave — you are thrown back onto the walkway to spectate, and you drop back in when the next wave starts. Your personal **clean streak** (waves survived without a hit) resets to zero; the group's round never rolls back. Ejected players watching from the rim are part of the design — they populate the walkway a newcomer sees in §2 and feed §5's bystander test.
+
+**Reset rule (decided 2026-08-14):** if a wave ends with nobody left standing in the pit, the yokai wins — the haunting resets to round 1. The drop-in ring stays open mid-round, so the arena is always enterable, and the ramp self-corrects to the current crowd's skill: deep rounds die fast, so newcomers mostly arrive at low rounds. A session is therefore a **collective run** — "we got to round 7" — that ends when a wipe breaks the banishment chain. Solo at a dead hour this collapses to "every hit resets the run" — coherent for the genre, but §5's quiet-hour test must look at it.
+
+**Roster mapping (decided 2026-08-14):** the yokai roster is grouped into difficulty tiers; each round summons a **random yokai from that round-band's tier**, preferring ones the pit has not seen today — never a fixed one-yokai-per-round ladder. Two runs to round 5 meet different yokai, so authored variety strengthens repetition without becoming its load-bearing source; the scrapbook (§4.3) fills breadth-first at low tiers while deep tiers stay rare, skill-gated pages; Great Haunting mega-yokai are pages too (attendance pages, not depth pages). The v1 roster slice is §9 arithmetic — deliberately unsized until §11's team hours exist.
+
+- **One loop takes:** one wave ≈ 40 s — measured in the H1 greybox (2026-08-13), inside the 30–90 s band. One round = waves until the bar empties, tuned to ~3 waves + the rim's preview beat ≈ 2–2.5 min.
+- **One session lasts:** one collective run to the wipe; target median 8–15 min. `TBD: measure median run length in the H2 greybox, then in the live funnel (§10).`
+- **Why is the 10th repetition still fun?** Three named sources, all already designed: **other players** — the crowd is the variety: holes open where someone else aimed a deflect, the bar melts at crowd speed, every run has a different cast; **rising difficulty** — every banishment buys a denser yokai, so repetition climbs instead of looping flat; **skill expression** — the aimed deflect and the clean streak give mastery a visible ceiling. Authored per-yokai pattern variety is deliberately the garnish, not the answer — content gets consumed once (the v1 yokai count is a §9 scope decision). The claim is parked, not proven: the solo floor tests in the H2 greybox; the crowd source needs v1 testers. `[HYPOTHESIS → H2-02]`
 - **Why the FIRST repetition feels good:** reading a wall of glowing bullets, finding the gap, and threading your whole avatar through it — with a deflect that punches a visible hole in the pattern. The verb held in the greybox: with no score, reward or goal attached, the owner voluntarily played 3 consecutive waves and quit by choice (H1-01 survived, owner self-test, desktop, 2026-08-13). Two conditions proved load-bearing and are now part of the verb: the deflect is **scarce** (1.5 s cooldown — free spam killed the weave entirely) and the telegraph is **honest** (exactly one bullet glows blue: the one E will send back, and only if its path would hit or graze you). Whether the verb pulls players who did not invent it is unmeasured — that is H1-04's fresh-eyes test. `[HYPOTHESIS → H1-01]` The deflect timing is fair on desktop — measured, not felt: 12/13 intended deflects landed (92% vs the ≥70% bar) on the aimed verb, and the owner could predict each landing before pressing (H1-02 validated 2026-08-13; the touch version is untested — mobile pending). Genre density actually runs on desktop — measured: 112 avg render FPS with 150 simultaneous glowing projectiles, zero hiccup frames, and the scene tick unchanged from 35-bullet load (H1-03 validated 2026-08-13; mobile untested — mobile pending). Pattern design is not FPS-constrained on desktop.
 
 ---
@@ -87,21 +95,15 @@ The last thing you see before leaving: [OPEN — the Day-2 reason is designed in
 
 ### 4.1 The Day-2 sentence
 
-*Complete it. Be concrete and time-anchored.*
+> "A player who enjoyed Day 1 comes back on Day 2 because last night's deepest round — *we got to round 7* — is sitting on this week's haunting board with their name on it, and it will not survive tonight's crowd unless they come defend it."
 
-> "A player who enjoyed Day 1 comes back on Day 2 because ______."
-
-*Bad answer: "because the game is fun / there is more content." Content gets consumed once; appointments and people bring players back.*
+The mark decays toward the Sunday reset, so it is always time-anchored; defense-of-a-mark lives in the player's own memory, which is the only notification system the platform has. Built entirely from state the loop already produces — "deepest round reached" is the session's natural output, zero new systems. Presumes hook 1 in §4.3: the weekly small-league haunting board. `[HYPOTHESIS → H2-04]`
 
 ### 4.2 The Day-7 player
 
-*What is different for a player on Day 7 compared to Day 1? Name the persistent state they have built: a rank, a collection at 7/20, a team, an upgraded thing, a cosmetic other players can see. If the only difference is "they have seen more levels", the design churns by default.*
-
-[Your answer]
+A Day-7 player has, by name: a **league rank tier** from Sunday's final standing, shown on the rim beside their name and over their head in the arena; a **lifetime personal best** (deepest round ever, never resets) standing next to their weekly mark; **1–2 Great Haunting charms** already hanging visibly on their avatar (§4.4); and a **scrapbook filling in** — x/N yokai revealed from silhouette, one for each yokai whose banishment they stood through (§4.3, hook 3). The skill is persistent too: they read patterns a wave earlier than they did on Day 1.
 
 ### 4.3 Your return hooks — pick at least two
-
-*Choose from this menu (or add your own) and describe exactly how each works in your experience:*
 
 | Hook | Why it works without push notifications |
 |---|---|
@@ -114,15 +116,15 @@ The last thing you see before leaving: [OPEN — the Day-2 reason is designed in
 | **Season track** — a free time-limited progress track, 6–8 weeks | Deadline + comeback moment at each new season; align with the program's cycles |
 | **Async traces** — things players leave behind that others discover later | The world feels alive even at quiet hours; zero ongoing cost |
 
-[Hook 1: name + how it works in your experience]
+**Hook 1 — Weekly small-league haunting board.** Your mark is the highest round in which you were **standing in the pit when its yokai was banished** — present and alive, not spectating from the walkway. That keeps the mark personal even though the run is collective, and it cannot be farmed by camping (H2-03's pattern law refuses that). Leagues are small brackets (~20 players, grouped as they first place each week — exact size `TBD: settled by H2-04's league-size arithmetic`), never one global board: on a global board the top ten own it and everyone else stops looking. Resets Sunday 00:00 UTC; the arena rim shows your league, your mark, and the countdown. `[HYPOTHESIS → H2-04]`
 
-[Hook 2: name + how it works in your experience]
+**Hook 2 — The Great Haunting, Friday 20:00 UTC.** Once a week the arena summons a mega-yokai: one fixed, reusable round template — bigger bar, denser opening wave, and a week of warning on the rim. Being in the pit at its banishment is the point (what it pays is §4.4's long-term goal). One automated template, no host required — the event calendar is the platform's only real notification system, carried by the in-world rim countdown plus Discord. `[HYPOTHESIS → H2-05]`
+
+**Hook 3 — The yokai scrapbook (collection).** A panel showing every yokai in the shipped roster, each a black silhouette until you have stood in the pit at that yokai's banishment — then it fills in, permanently. The unfinished page is the hook: the set visibly wants completing, and deep-round yokai make deep runs worth chasing beyond the board. The roster ambition is large (~30 yokai over the program's rounds — owner's call); the v1 slice is §9 scope arithmetic, and the panel only ever shows the shipped roster, so no slot can be a promise the build cannot keep. `[HYPOTHESIS → H2-06]`
 
 ### 4.4 The long-term goal
 
-*What takes more than two weeks to achieve — and how do OTHER players see someone's progress toward it? (An invisible XP number motivates nobody in a social world. A wearable, a title, a spot on a board — those do.)*
-
-[Your answer]
+**The Exorcist wearable** — awarded for standing in the pit at **4 Great Haunting banishments**. Calendar-gated by construction: four Fridays is a month, and no grinding compresses it. Progress is stranger-visible *during* the climb, not only at the end — each attended banishment hangs a visible charm on your avatar in-scene (one attachment model, reused ×4), so a stranger sees 3/4 charms and asks. The finished wearable travels everywhere in Decentraland: the most retained players become the free marketing channel. Behind it sits the longer arc: completing the yokai scrapbook (§4.3) — season-scale, and it grows with each program round's content drop.
 
 ---
 
@@ -316,4 +318,10 @@ The last thing you see before leaving: [OPEN — the Day-2 reason is designed in
 | H1-01 | IF the core verb is weave-through-a-bullet-pattern plus a timed deflect, THEN the owner voluntarily replays ≥3 consecutive greybox waves with no score, reward or goal attached | §3 Core Loop | Desktop Explorer greybox, owner self-test, ~30 min build | survived | kill-check held: 3 voluntary waves, quit by choice (owner self-test) · 2026-08-13 | desktop |
 | H1-02 | IF the deflect window is ≥0.4 s and bullets telegraph clearly, THEN the owner lands ≥7 of 10 intended deflects in a greybox wave | §3 Core Loop | Same greybox as H1-01, owner self-test (mobile-sensitive) | validated | 12/13 intended deflects (92%), aimed verb, kill-check held · 2026-08-13 | desktop — mobile pending |
 | H1-03 | IF a wave renders ~150 simultaneous moving glowing projectiles, THEN the scene holds ≥60 fps in desktop Explorer on recommended hardware | §3 Core Loop | Instrumented desktop greybox, agent-measurable (mobile-sensitive) | validated | 112 avg render FPS at 150 projectiles, 0 hiccups · 2026-08-13 | desktop — mobile pending |
-| H1-04 | IF the spawn frames the arena mid-pattern below the walkway, THEN 4 of 5 first-time testers start dodging within 5 s without being told anything | §2 First Session | H1-01 greybox + 3–5 first-time testers (fresh eyes required) | parked | | — |
+| H2-01 | IF the yokai's life bar makes deflect the win verb, THEN an owner self-test round still plays as weaving punctuated by deflects — the owner does not camp the 1.5 s cooldown near the emitter | §3 Core Loop | Extend the H1 greybox with a life bar + deflect damage; owner self-test, one round | parked | | — |
+| H2-02 | IF the greybox has the full loop structure (life bar, ramp, wipe reset, clean streak), THEN the owner voluntarily plays ≥10 waves across ≥2 runs in one sitting and quits by choice, not boredom | §3 Core Loop | Same H2 greybox build as H2-01, owner self-test (solo floor only — the crowd source needs v1 testers) | parked | | — |
+| H2-03 | IF wave patterns sweep and rotate their safe zones, THEN standing near-still for a full wave is not survivable — a deliberate camping attempt gets hit before the wave ends | §3 Core Loop | Same H2 greybox; owner deliberately camps one spot for a wave | parked | | — |
+| H2-04 | IF the weekly small-league haunting board shows each player's deepest round, THEN players who place a mark on Day 1 return on Day 2 at a visibly higher rate than players who never placed | §4.1 Day-2 sentence | League-size arithmetic on paper now; the behaviour claim needs the live v1 funnel (D2 return, placers vs non-placers) | parked | | — |
+| H2-05 | IF the Great Haunting runs every Friday 20:00 UTC with a week of rim warning, THEN Friday-evening concurrency visibly spikes above the weekday baseline | §4.3 Hook 2 | Live v1 funnel — concurrency around Friday 20:00 vs weekday baseline; no cheaper rung exists for a calendar-behaviour claim | parked | | — |
+| H2-06 | IF the scrapbook shows silhouette→revealed progress per yokai, THEN players with a partially filled page (≥3 revealed) return within 7 days at a higher rate than players with none | §4.3 Hook 3 | Reveal-pacing arithmetic on paper now (reveals per session — no yokai may be a wall); the behaviour claim needs the live v1 funnel | parked | | — |
+| H1-04 | IF the spawn frames the arena mid-pattern below the walkway, THEN 4 of 5 first-time testers start dodging within 5 s without being told anything | §2 First Session | H1-01 greybox + 3–5 first-time testers (fresh eyes required) | deferred | deferred at stage-1 close — needs fresh eyes; v1 brings external testers · 2026-08-14 | — |

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yokai Arena — shortGDD render</title>
+<style>
+  :root {
+    --bg: #0b0d14; --panel: #12151f; --edge: #232838;
+    --ink: #d9dce6; --dim: #8a90a3; --neon: #47d7ff; --pink: #ff5c8a;
+    --gold: #ffd166; --ok: #6ee7a0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 40px 20px 80px; }
+  header { border-bottom: 1px solid var(--edge); padding-bottom: 24px; margin-bottom: 32px; }
+  h1 { margin: 0 0 4px; font-size: 2rem; color: var(--neon); letter-spacing: .02em; }
+  .stamp { color: var(--dim); font-size: .85rem; }
+  .stagebar { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .stagebar span { font-size: .8rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--edge); color: var(--dim); }
+  .stagebar .done { border-color: var(--ok); color: var(--ok); }
+  .stagebar .now { border-color: var(--gold); color: var(--gold); }
+  h2 { font-size: 1.15rem; color: var(--pink); margin: 40px 0 12px; text-transform: uppercase; letter-spacing: .08em; }
+  .panel { background: var(--panel); border: 1px solid var(--edge); border-radius: 10px; padding: 18px 20px; }
+  .hook { font-size: 1.25rem; line-height: 1.5; border-left: 3px solid var(--neon); padding-left: 16px; }
+  table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--edge); vertical-align: top; }
+  th { color: var(--dim); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+  .scroll { overflow-x: auto; }
+  .tag { font-size: .75rem; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+  .t-ok { background: rgba(110,231,160,.12); color: var(--ok); }
+  .t-open { background: rgba(255,209,102,.12); color: var(--gold); }
+  .t-def { background: rgba(138,144,163,.15); color: var(--dim); }
+  .open { color: var(--gold); }
+  .dim { color: var(--dim); }
+  .evidence { font-size: .9rem; color: var(--dim); margin-top: 12px; }
+  .evidence b { color: var(--ok); }
+  img { max-width: 100%; border-radius: 10px; border: 1px solid var(--edge); display: block; }
+  figcaption { font-size: .85rem; color: var(--dim); margin-top: 8px; }
+  ul { margin: 8px 0; padding-left: 20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Yokai Arena <span class="dim">(working name)</span></h1>
+  <div class="stamp">rendered from shortGDD.md · v2 · 2026-08-14 · Creator Success proposal in progress — not yet submission-ready</div>
+  <div class="stagebar">
+    <span class="done">✓ stage 1 · find the fun — closed 2026-08-14</span>
+    <span class="now">▶ stage 2 · pitch — §3 loop table + §4 retention in interview</span>
+    <span>stage 3 · ten-pager</span>
+  </div>
+</header>
+
+<h2>§1 · The Hook</h2>
+<p class="hook">It's like NieR: Automata's bullet hell, but the arena is shared — you and every other avatar in the plaza survive the same pattern together.</p>
+
+<h2>§2 · First Session — as "you"</h2>
+<div class="panel">
+  <p>You spawn on a neon-lit walkway ringing a sunken arena. Below, glowing orbs bloom outward in slow spirals, and a handful of avatars weave between them. A pulsing ring on the floor marks the drop-in point. <span class="dim">[HYPOTHESIS → H1-04]</span></p>
+  <p>You drop in as a new wave starts — wide, slow arcs. You sidestep the first one; a low chime marks the near miss. Then an orb flashes blue as it closes on you — you press, and it ricochets back through the pattern, punching a hole the avatar beside you dives through.</p>
+  <p>Wave by wave the pattern tightens. You survive your first full round of three waves; the arena rim lights up with the next round's name and a preview of its pattern — visibly denser.</p>
+  <p class="open">The last thing you see before leaving: [OPEN — the Day-2 reason is designed in §4 at stage 2, then staged back into this beat.]</p>
+</div>
+
+<h2>§3 · Core Loop <span class="tag t-ok">verb proven</span> <span class="tag t-open">loop table [OPEN — stage 2]</span></h2>
+<div class="scroll"><table>
+  <tr><th>#</th><th>Verb</th><th>What the player does</th><th>Why do it again?</th></tr>
+  <tr><td>1</td><td>READ</td><td>Watch the incoming bullet pattern and find the gap</td><td>Every wave draws a new pattern</td></tr>
+  <tr><td>2</td><td>WEAVE</td><td>Move your avatar through the gap</td><td class="open">[OPEN — stage 2]</td></tr>
+  <tr><td>3</td><td>DEFLECT</td><td>A timed press ricochets the flashing bullet wherever your camera points — aim is part of the verb (decided 2026-08-13) — clearing a hole in the pattern <b>for everyone in the arena</b></td><td>Your deflect visibly helps the players around you</td></tr>
+  <tr><td>4</td><td>SURVIVE</td><td>Outlast the wave; the next one starts tighter</td><td class="open">[OPEN — stage 2]</td></tr>
+</table></div>
+<p class="dim">One loop takes · one session lasts · why the 10th repetition is still fun — all <span class="open">[OPEN — stage 2]</span>, in interview now.</p>
+<p class="evidence"><b>Why the first repetition feels good — measured, not hoped:</b> the verb held with no score, reward or goal attached — 3 voluntary greybox waves, quit by choice (H1-01 survived). Two load-bearing conditions are part of the verb: the deflect is <b>scarce</b> (1.5 s cooldown) and the telegraph is <b>honest</b> (exactly one bullet glows blue — the one E sends back). Deflect timing is fair: 12/13 intended deflects (92% vs ≥70% bar), landings predictable before the press (H1-02 validated). Genre density runs: 112 avg render FPS at 150 simultaneous projectiles, zero hiccups (H1-03 validated). Both mobile pending. Whether the verb pulls players who didn't invent it is H1-04 — deferred to v1's external testers.</p>
+
+<h2>§7 · World, Look &amp; Story</h2>
+<div class="panel">
+  <p>Neo-Tokyo's grid is haunted by digital yokai, and each round the arena summons one — its bullet pattern is that spirit's fury given light. You survive the haunting together with everyone in the pit; deflecting a bullet throws the yokai's own fury back at it.</p>
+  <p class="dim">Visual direction: Ghostwire: Tokyo (rain-slick neon shrine streets) · NieR: Automata's glowing-orb bullet language · Akira's Neo-Tokyo night palette. Stylized PBR, baked lighting. <span class="dim">[agent-decided — owner named "cyberpunk yokai"; references chosen to match]</span></p>
+  <figure style="margin:16px 0 0">
+    <img src="01-find-the-fun/H1-01-greybox.png" alt="H1-01 greybox — sunken arena, walkway ring, one pattern mid-bloom">
+    <figcaption>H1-01 greybox (desktop Explorer, 2026-08-13): sunken arena, walkway ring, one spiral pattern mid-bloom. Primitives only — the yokai art direction is not yet built.</figcaption>
+  </figure>
+</div>
+
+<h2>§8 · Comparables</h2>
+<div class="scroll"><table>
+  <tr><th></th><th>A — <span class="open">TBD: owner to name a second comparable before submission</span></th><th>B — NieR: Automata</th></tr>
+  <tr><td>What worked</td><td></td><td>3D bullet-hell patterns — slow, fat, glowing orbs readable in 3D space — fused with a Japanese sci-fi/cyberpunk mood.</td></tr>
+  <tr><td>What didn't</td><td></td><td>Combat depth and camera precision far beyond a small team's scope; not what made the patterns memorable.</td></tr>
+  <tr><td>What we do differently</td><td></td><td>Keep NieR's bullet language, strip its combat: no shooting, no combos — one shared arena, one timed aimed deflect that visibly helps everyone. Short sessions in a social world, not a 30-hour solo campaign.</td></tr>
+</table></div>
+
+<h2>Open at stage 2</h2>
+<div class="panel">
+  <ul>
+    <li><b>§3</b> loop table — cycle length, session length, 10th repetition <span class="dim">(in interview now; parked candidates: difficulty ramp, boss life bar, anti-camping)</span></li>
+    <li><b>§4</b> Why Players Come Back — Day-2 sentence, Day-7 state, 2+ return hooks, long-term goal</li>
+    <li><b>§5</b> Social by Design · <b>§11</b> Team · <b>§9</b> plan skeleton · <b>§0</b> TL;DR</li>
+    <li class="dim">§6 Mobile, §10 Success Criteria, §12 Deliverables — stage 3</li>
+  </ul>
+</div>
+
+<h2>Appendix A · Hypothesis Log</h2>
+<div class="scroll"><table>
+  <tr><th>ID</th><th>IF / THEN</th><th>Source</th><th>Cheapest killing test</th><th>Status</th><th>Verdict / date</th><th>Tested on</th></tr>
+  <tr><td>H1-01</td><td>IF the core verb is weave-through-a-bullet-pattern plus a timed deflect, THEN the owner voluntarily replays ≥3 consecutive greybox waves with no score, reward or goal</td><td>§3</td><td>Desktop greybox, owner self-test</td><td><span class="tag t-ok">survived</span></td><td>kill-check held: 3 voluntary waves, quit by choice · 2026-08-13</td><td>desktop</td></tr>
+  <tr><td>H1-02</td><td>IF the deflect window is ≥0.4 s and bullets telegraph clearly, THEN the owner lands ≥7 of 10 intended deflects</td><td>§3</td><td>Same greybox, owner self-test (mobile-sensitive)</td><td><span class="tag t-ok">validated</span></td><td>12/13 (92%), aimed verb · 2026-08-13</td><td>desktop — <i>mobile pending</i></td></tr>
+  <tr><td>H1-03</td><td>IF a wave renders ~150 simultaneous glowing projectiles, THEN the scene holds ≥60 fps on recommended desktop</td><td>§3</td><td>Instrumented greybox, agent-measured (mobile-sensitive)</td><td><span class="tag t-ok">validated</span></td><td>112 avg render FPS, 0 hiccups · 2026-08-13</td><td>desktop — <i>mobile pending</i></td></tr>
+  <tr><td>H1-04</td><td>IF the spawn frames the arena mid-pattern below the walkway, THEN 4 of 5 first-time testers start dodging within 5 s untold</td><td>§2</td><td>H1-01 greybox + 3–5 first-time testers (fresh eyes)</td><td><span class="tag t-def">deferred</span></td><td>deferred at stage-1 close — v1 brings external testers · 2026-08-14</td><td>—</td></tr>
+</table></div>
+
+</div>
+</body>
+</html>
