@@ -3,9 +3,10 @@ import { Color4 } from '@dcl/sdk/math'
 import { copyToClipboard } from '~system/RestrictedActions'
 import { stats } from './state'
 
-// The HUD is the instrument, not decoration: wave count (H1-01 criterion),
-// deflect ratio (H1-02 rider), bullets + fps (H1-03 rider).
-// Clicking the panel copies all counters as one line — session-log raw data.
+// The HUD is the instrument, not decoration: round/wave/HP (H2-01 build),
+// camping meter (H2-01 kill-check), streak + runs + deepest round (H2-02
+// riders), deflect ratio, bullets + fps. Clicking the panel copies all
+// counters as one line — session-log raw data.
 export function setupUi() {
   ReactEcsRenderer.setUiRenderer(Hud, { virtualWidth: 1920, virtualHeight: 1080 })
 }
@@ -14,9 +15,11 @@ let copiedFlashUntil = 0
 
 function copyStats() {
   const text =
-    `H1-01 wave=${stats.wave} completed=${stats.wavesCompleted} ` +
-    `deflects=${stats.deflectHits}/${stats.deflectAttempts} timesHit=${stats.timesHit} ` +
-    `bullets=${stats.bullets} fps=${stats.fps} minFps=${stats.minFps}`
+    `H2 run=${stats.runs} round=${stats.round} wave=${stats.waveInRound} deepest=${stats.deepestRound} ` +
+    `streak=${stats.streak}/${stats.bestStreak} hp=${stats.yokaiHp}/${stats.yokaiMaxHp} ` +
+    `deflects=${stats.deflectHits}/${stats.deflectAttempts} yokaiHits=${stats.yokaiHits} timesHit=${stats.timesHit} ` +
+    `camp=${stats.campPct}% lastWaveCamp=${stats.lastWaveCampPct}% ` +
+    `wavesCompleted=${stats.wavesCompleted} bullets=${stats.bullets} fps=${stats.fps} minFps=${stats.minFps}`
   copiedFlashUntil = Date.now() + 1500
   copyToClipboard({ text }).catch(() => {
     console.log('copyToClipboard failed; data line: ' + text)
@@ -59,8 +62,14 @@ function Hud() {
         uiBackground={{ color: Color4.create(0, 0, 0, 0.55) }}
         onMouseDown={copyStats}
       >
-        {line(`WAVE ${stats.wave}`, 36, Color4.create(1, 0.85, 0.3, 1))}
-        {line(`waves completed: ${stats.wavesCompleted}`)}
+        {line(`ROUND ${stats.round} · WAVE ${stats.waveInRound}`, 36, Color4.create(1, 0.85, 0.3, 1))}
+        {line(`yokai: ${stats.yokaiHp}/${stats.yokaiMaxHp}`, 24, Color4.create(1, 0.4, 0.8, 1))}
+        {line(
+          `clean streak: ${stats.streak} (best ${stats.bestStreak})`,
+          24,
+          stats.streak > 0 ? Color4.create(0.5, 1, 0.6, 1) : Color4.White()
+        )}
+        {line(`run ${stats.runs} · deepest round ${stats.deepestRound}`, 20, Color4.create(0.7, 0.7, 0.7, 1))}
         {line(
           stats.deflectCooldown > 0
             ? `deflects: ${stats.deflectHits}/${stats.deflectAttempts} (recharging)`
@@ -69,6 +78,11 @@ function Hud() {
           stats.deflectCooldown > 0 ? Color4.create(0.45, 0.45, 0.45, 1) : Color4.White()
         )}
         {line(`times hit: ${stats.timesHit}`)}
+        {line(
+          `camp ${stats.campPct}%` + (stats.lastWaveCampPct >= 0 ? ` (last wave ${stats.lastWaveCampPct}%)` : ''),
+          20,
+          Color4.create(0.7, 0.7, 0.7, 1)
+        )}
         {line(`bullets: ${stats.bullets} · fps ${stats.fps} (min ${stats.minFps || '—'})`, 20, Color4.create(0.7, 0.7, 0.7, 1))}
         {line(
           Date.now() < copiedFlashUntil ? 'copied!' : 'click to copy',
@@ -76,6 +90,31 @@ function Hud() {
           Date.now() < copiedFlashUntil ? Color4.create(0.4, 1, 0.5, 1) : Color4.create(0.55, 0.55, 0.55, 1)
         )}
       </UiEntity>
+
+      {/* banner — banish / wipe / knockout messages */}
+      {stats.bannerLeft > 0 && (
+        <UiEntity
+          uiTransform={{
+            positionType: 'absolute',
+            position: { top: '32%', left: 0 },
+            width: '100%',
+            justifyContent: 'center'
+          }}
+        >
+          <Label
+            value={stats.banner}
+            fontSize={40}
+            color={
+              stats.banner.indexOf('BANISHED') >= 0
+                ? Color4.create(1, 0.85, 0.3, 1)
+                : stats.banner.indexOf('WINS') >= 0
+                  ? Color4.create(1, 0.35, 0.3, 1)
+                  : Color4.create(1, 0.6, 0.2, 1)
+            }
+            font="monospace"
+          />
+        </UiEntity>
+      )}
 
       {/* rest countdown — centre screen between waves */}
       {stats.resting && (
@@ -106,7 +145,7 @@ function Hud() {
         }}
       >
         <Label
-          value="WASD move · E deflect when a bullet flashes blue"
+          value="WASD move · E deflect when a bullet flashes blue · empty the yokai's bar"
           fontSize={20}
           color={Color4.create(0.8, 0.8, 0.8, 1)}
           font="monospace"

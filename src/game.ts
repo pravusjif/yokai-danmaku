@@ -12,36 +12,51 @@ import {
   KnockbackFalloff
 } from '@dcl/sdk/ecs'
 import { Vector3, Color4, Color3 } from '@dcl/sdk/math'
+import { movePlayerTo } from '~system/RestrictedActions'
 import { stats } from './state'
-import { CENTER_X, CENTER_Z, ARENA_RADIUS } from './arena'
+import { CENTER_X, CENTER_Z, ARENA_RADIUS, updateYokaiBar } from './arena'
 
 // --- Tunables (log any change between owner passes in ## Sessions) ---
+// H1 verb tunables are FROZEN for H2-01: cooldown, telegraph, lane rule, speeds
+// all proved load-bearing in H1-01 and must not move under the life bar test.
 const BULLET_SPEED = 4 // m/s, slow and fat per the brief
 const DEFLECT_SPEED = 6 // deflected bullets fly back faster — the ricochet must read
 const BULLET_SCALE = 0.6 // fat glowing sphere
 const TELEGRAPH_RANGE = 3.5 // a bullet inside this range can become THE deflect target
 const TELEGRAPH_EXIT = 4.3 // the current target keeps its blue until past this (no flicker)
-// Added between owner passes 3 and 4 (2026-08-13): a bullet only qualifies if its
-// flight path passes within this lateral distance of the player — blue means
-// "coming AT you", not merely "nearby". Pass 3 found side-passing bullets
-// qualifying at full telegraph range, which read as deflecting far bullets.
+// A bullet only qualifies if its flight path passes within this lateral distance
+// of the player — blue means "coming AT you", not merely "nearby" (H1-01 pass 3→4).
 const LANE_WIDTH = 1.2
 const HIT_DIST = 0.65 // horizontal distance that counts as a hit
-const EMIT_TICK = 0.35 // seconds between spiral arms
+const EMIT_TICK = 0.35 // seconds between spiral arms, at density 1
 const ARMS = 4 // bullets per tick
 const STEP_DEG = 17 // spiral rotation per tick — draws slow moving lanes
 const WAVE_EMIT_TIME = 35 // seconds of pattern per wave
 const WAVE_REST_TIME = 5 // quiet gap between waves
-const IFRAME_TIME = 0.8 // grace after a hit so one mistake costs one knockback
+const IFRAME_TIME = 0.8 // grace so one bullet cluster costs one knockout, not several counts
 const KNOCKBACK_MAG = 12
 const FPS_WARMUP = 5 // ignore min-fps during scene load
-// Added between owner passes 1 and 2 (2026-08-13): pass 1 found E-spam while
-// standing still deflects everything, bypassing the weave verb. Any E press
-// starts the cooldown; presses during it do nothing and are not counted.
+// E-spam killed the weave in H1-01 pass 1; the cooldown is part of the verb now.
 const DEFLECT_COOLDOWN = 1.5
+
+// --- H2 round structure (new for H2-01/H2-02/H2-03) ---
+const BAR_HP = 18 // deflected bullets into the emitter to banish; sized for ~3 solo waves
+const HITS_PER_KNOCKOUT = 3 // owner decision 2026-08-15: one hit out was too punishing
+const RAMP_PER_ROUND = 0.18 // density factor per banished yokai — "the next one attacks denser"
+const RAMP_PER_WAVE = 0.06 // waves tighten within a round while the bar holds
+const MAX_DENSITY = 2.2 // cap ≈ 77 live bullets — H1-03 measured 112 fps at 150, safe
+const SWEEP_AMP = 7 // deg of wobble on the spiral step — safe lanes drift (H2-03's law)
+const SWEEP_RATE = 0.4 // wobble speed, rad/s of wave time
+const BANISH_REST = 6 // beat after a banish — "next round: denser"
+const WIPE_REST = 6 // beat after a wipe — "the yokai wins"
+const YOKAI_CORE_RADIUS = 1.2 // a deflected bullet inside this damages the bar
+// Camping meter: % of in-pit wave time spent within CAMP_RADIUS of where the
+// player was CAMP_LAG seconds earlier. The number behind H2-01's kill-check.
+const CAMP_RADIUS = 2.5
+const CAMP_LAG = 4
+const CAMP_SAMPLE = 0.5
 // H1-03 density instrument: when > 0, bypass the wave clock and keep this many
-// bullets alive, spiral angles preserved. 0 = normal game. Kept for the mobile
-// re-test at core-loop stage close (H1-03 closed `validated — mobile pending`).
+// bullets alive. 0 = normal game. Kept for the mobile re-test at stage close.
 const DENSITY_TEST = 0
 
 type BulletState = 'live' | 'telegraph' | 'deflected'
@@ -56,9 +71,8 @@ type Bullet = {
 }
 
 const pool: Bullet[] = []
-// Changed between owner passes 2 and 3 (2026-08-13): exactly ONE bullet glows
-// blue — the one E will actually deflect (nearest threatening, not aim-based) —
-// and none glows while E is recharging. Blue = "press E now and this one goes".
+// Exactly ONE bullet glows blue — the one E will actually deflect — and none
+// glows while E is recharging (H1-01 passes 2→3). Blue = "press E now".
 let currentTarget: Bullet | null = null
 let spiralAngle = 0
 let emitAccum = 0
@@ -66,6 +80,13 @@ let iframe = 0
 let fpsFrames = 0
 let fpsTime = 0
 let sessionTime = 0
+// camping meter internals
+let campSamples: { x: number; z: number }[] = []
+let campAccum = 0
+let campTime = 0
+let pitTime = 0
+// knockout enforcement — re-teleport throttle
+let knockbackCooldown = 0
 
 function setBulletState(b: Bullet, state: BulletState) {
   b.state = state
@@ -77,7 +98,7 @@ function setBulletState(b: Bullet, state: BulletState) {
       emissiveIntensity: 3
     })
   } else if (state === 'telegraph') {
-    // blue — THE deflectable bullet, right now (H1-02's telegraph under test)
+    // blue — THE deflectable bullet, right now
     Material.setPbrMaterial(b.entity, {
       albedoColor: Color4.create(0, 0.05, 0.15, 1),
       emissiveColor: Color3.create(0.3, 0.7, 1),
@@ -119,14 +140,108 @@ function despawnBullet(b: Bullet) {
   VisibilityComponent.getMutable(b.entity).visible = false
 }
 
+function despawnAllBullets() {
+  for (const b of pool) if (b.active) despawnBullet(b)
+}
+
+function setBanner(text: string, seconds: number) {
+  stats.banner = text
+  stats.bannerLeft = seconds
+}
+
+function resetWaveInstruments() {
+  stats.hitsThisWave = 0
+  campSamples = []
+  campAccum = 0
+  campTime = 0
+  pitTime = 0
+  stats.campPct = 0
+}
+
+// density factor for the current round/wave — the ramp IS the difficulty curve
+function density(): number {
+  return Math.min(
+    MAX_DENSITY,
+    1 + RAMP_PER_ROUND * (stats.round - 1) + RAMP_PER_WAVE * (stats.waveInRound - 1)
+  )
+}
+
+// Banish: bar hit zero. Ends the round on the spot — next yokai is denser.
+function banish() {
+  // a bullet landing in the rest gap must not double-count the ended wave
+  if (!stats.resting) {
+    if (stats.hitsThisWave === 0) {
+      stats.streak++
+      if (stats.streak > stats.bestStreak) stats.bestStreak = stats.streak
+    }
+    stats.wavesCompleted++
+    logWaveLine('banish')
+  }
+  despawnAllBullets()
+  stats.round++
+  if (stats.round > stats.deepestRound) stats.deepestRound = stats.round
+  stats.waveInRound = 1
+  stats.yokaiHp = stats.yokaiMaxHp
+  updateYokaiBar(1)
+  stats.knockedOut = false
+  stats.resting = true
+  stats.restLeft = BANISH_REST
+  setBanner(`YOKAI BANISHED — ROUND ${stats.round}: DENSER`, BANISH_REST)
+  console.log(`SMOKE banish: now round=${stats.round} runs=${stats.runs} deepest=${stats.deepestRound}`)
+}
+
+// Wipe: the wave ended with nobody standing in the pit — the yokai wins.
+function wipe() {
+  stats.wavesCompleted++
+  logWaveLine('wipe')
+  despawnAllBullets()
+  stats.runs++
+  stats.round = 1
+  stats.waveInRound = 1
+  stats.yokaiHp = stats.yokaiMaxHp
+  updateYokaiBar(1)
+  stats.knockedOut = false // drop back in when the next haunting starts
+  stats.resting = true
+  stats.restLeft = WIPE_REST
+  setBanner('THE YOKAI WINS — HAUNTING RESETS', WIPE_REST)
+  console.log(`SMOKE wipe: back to round 1, runs=${stats.runs} deepest=${stats.deepestRound}`)
+}
+
+function logWaveLine(end: 'clean' | 'hit' | 'wipe' | 'banish') {
+  const camp = pitTime > 0 ? Math.round((campTime / pitTime) * 100) : 0
+  stats.lastWaveCampPct = camp
+  console.log(
+    `SMOKE wave end (${end}): round=${stats.round} waveInRound=${stats.waveInRound} camp=${camp}% ` +
+      `streak=${stats.streak} hp=${stats.yokaiHp}/${stats.yokaiMaxHp} deflects=${stats.deflectHits}/${stats.deflectAttempts} ` +
+      `yokaiHits=${stats.yokaiHits} timesHit=${stats.timesHit} fps=${stats.fps} bullets=${stats.bullets}`
+  )
+}
+
+// Knockout: 3rd hit in a wave = out for the rest of it. Thrown to the walkway
+// to spectate; the group's round never rolls back. Streak resets on the hit
+// itself, not here — this also re-throws knocked-out players who walk back in.
+function knockout(fromX: number, fromZ: number) {
+  stats.knockedOut = true
+  setBanner('KNOCKED OUT — BACK NEXT WAVE', 3)
+  const ang = Math.atan2(fromZ - CENTER_Z, fromX - CENTER_X)
+  void movePlayerTo({
+    newRelativePosition: Vector3.create(CENTER_X + Math.cos(ang) * 14, 3.2, CENTER_Z + Math.sin(ang) * 14),
+    cameraTarget: Vector3.create(CENTER_X, 1.5, CENTER_Z)
+  })
+  console.log(`SMOKE knockout: round=${stats.round} waveInRound=${stats.waveInRound} timesHit=${stats.timesHit}`)
+}
+
 export function setupGame() {
-  // nothing to set up beyond the systems; pool grows lazily
+  stats.yokaiMaxHp = BAR_HP
+  stats.yokaiHp = BAR_HP
+  updateYokaiBar(1)
 }
 
 export function gameSystem(dt: number) {
   sessionTime += dt
 
-  // --- FPS instrumentation (H1-03 rider): engine ticks per wall-second ---
+  // --- FPS instrumentation: engine ticks per wall-second (render FPS is
+  // measured externally — see H1-01 smoke note) ---
   fpsFrames++
   fpsTime += dt
   if (fpsTime >= 0.5) {
@@ -138,13 +253,13 @@ export function gameSystem(dt: number) {
     fpsTime = 0
   }
 
-  // --- Wave clock: same single pattern every wave, no goal, no reward ---
+  if (stats.bannerLeft > 0) stats.bannerLeft = Math.max(0, stats.bannerLeft - dt)
+
+  // --- Wave clock ---
   if (DENSITY_TEST > 0) {
     // maintain-N spawner: top up to DENSITY_TEST every frame (H1-03 instrument)
     let alive = 0
     for (const b of pool) if (b.active) alive++
-    // top up at most 3/frame so the population staggers into a spread spiral
-    // instead of one expanding cohort ring
     let topUp = 3
     while (alive < DENSITY_TEST && topUp > 0) {
       spawnBullet((spiralAngle * Math.PI) / 180)
@@ -158,36 +273,85 @@ export function gameSystem(dt: number) {
       stats.resting = false
       stats.waveTime = 0
       stats.wave++
+      resetWaveInstruments()
     }
   } else {
     stats.waveTime += dt
     if (stats.waveTime >= WAVE_EMIT_TIME) {
-      stats.resting = true
-      stats.restLeft = WAVE_REST_TIME
-      stats.wavesCompleted++
-      console.log(
-        `SMOKE wave ${stats.wave} complete: total=${stats.wavesCompleted} deflects=${stats.deflectHits}/${stats.deflectAttempts} hit=${stats.timesHit} fps=${stats.fps} minFps=${stats.minFps} bullets=${stats.bullets}`
-      )
+      // Wave end. Solo, a knockout means the pit is empty — the yokai wins.
+      if (stats.knockedOut) {
+        wipe()
+      } else {
+        if (stats.hitsThisWave === 0) {
+          stats.streak++
+          if (stats.streak > stats.bestStreak) stats.bestStreak = stats.streak
+        }
+        stats.wavesCompleted++
+        logWaveLine(stats.hitsThisWave > 0 ? 'hit' : 'clean')
+        stats.waveInRound++
+        stats.resting = true
+        stats.restLeft = WAVE_REST_TIME
+      }
     } else {
-      // --- Emit the spiral ---
+      // --- Emit the spiral. Density ramps with round/wave; the step wobbles
+      // and the direction flips each wave, so safe lanes sweep and never
+      // reopen in the same place (H2-03 rides on this). ---
+      const d = density()
+      const tick = EMIT_TICK / d
+      const sweepDir = stats.wave % 2 === 0 ? -1 : 1
       emitAccum += dt
-      while (emitAccum >= EMIT_TICK) {
-        emitAccum -= EMIT_TICK
+      while (emitAccum >= tick) {
+        emitAccum -= tick
         for (let arm = 0; arm < ARMS; arm++) {
           spawnBullet(((spiralAngle + (360 / ARMS) * arm) * Math.PI) / 180)
         }
-        spiralAngle = (spiralAngle + STEP_DEG) % 360
+        const step = STEP_DEG + SWEEP_AMP * Math.sin(stats.waveTime * SWEEP_RATE)
+        spiralAngle = (spiralAngle + sweepDir * step + 360) % 360
       }
     }
   }
 
   const playerT = Transform.getOrNull(engine.PlayerEntity)
   const px = playerT ? playerT.position.x : CENTER_X
+  const py = playerT ? playerT.position.y : 0
   const pz = playerT ? playerT.position.z : CENTER_Z
+  const prx = px - CENTER_X
+  const prz = pz - CENTER_Z
+  const playerR = Math.sqrt(prx * prx + prz * prz)
+  // In the pit = on the arena floor, below the walkway. Targeting, hits and
+  // the camping meter all key off this.
+  const inPit = playerT !== null && playerT.position.y < 2.2 && playerR < ARENA_RADIUS
 
   if (iframe > 0) iframe -= dt
+  if (knockbackCooldown > 0) knockbackCooldown -= dt
   if (stats.deflectCooldown > 0) stats.deflectCooldown = Math.max(0, stats.deflectCooldown - dt)
   if (stats.hitFlash > 0) stats.hitFlash = Math.max(0, stats.hitFlash - dt * 2.5)
+
+  // --- Knockout enforcement: a knocked-out player who walks back into the
+  // pit mid-wave gets put back on the walkway (the wave is not theirs) ---
+  if (stats.knockedOut && !stats.resting && inPit && knockbackCooldown <= 0) {
+    knockbackCooldown = 0.6
+    knockout(px, pz)
+  }
+
+  // --- Camping meter: only in-pit wave time counts ---
+  if (!stats.resting && !stats.knockedOut && inPit && DENSITY_TEST === 0) {
+    pitTime += dt
+    campAccum += dt
+    if (campAccum >= CAMP_SAMPLE) {
+      campAccum -= CAMP_SAMPLE
+      campSamples.push({ x: px, z: pz })
+      const maxSamples = Math.round(CAMP_LAG / CAMP_SAMPLE) + 1
+      while (campSamples.length > maxSamples) campSamples.shift()
+    }
+    if (campSamples.length > 0) {
+      const anchor = campSamples[0]
+      const cdx = px - anchor.x
+      const cdz = pz - anchor.z
+      if (cdx * cdx + cdz * cdz < CAMP_RADIUS * CAMP_RADIUS) campTime += dt
+    }
+    stats.campPct = pitTime > 0.5 ? Math.round((campTime / pitTime) * 100) : 0
+  }
 
   // --- Move bullets, detect hits, find the one deflect target ---
   let liveCount = 0
@@ -209,8 +373,21 @@ export function gameSystem(dt: number) {
     const rz = t.position.z - CENTER_Z
     const rFromCenter = Math.sqrt(rx * rx + rz * rz)
 
-    // Despawn: left the arena, returned to the emitter, or expired
-    if (rFromCenter > ARENA_RADIUS || (b.state === 'deflected' && rFromCenter < 1.2) || b.age > 10) {
+    // Deflected bullet reaches the yokai core: the only damage in the game
+    if (b.state === 'deflected' && rFromCenter < YOKAI_CORE_RADIUS) {
+      despawnBullet(b)
+      stats.yokaiHits++
+      if (stats.yokaiHp > 0) {
+        stats.yokaiHp--
+        updateYokaiBar(stats.yokaiHp / stats.yokaiMaxHp)
+        console.log(`SMOKE yokai hit: hp=${stats.yokaiHp}/${stats.yokaiMaxHp} round=${stats.round}`)
+        if (stats.yokaiHp <= 0) banish()
+      }
+      continue
+    }
+
+    // Despawn: left the arena or expired
+    if (rFromCenter > ARENA_RADIUS || b.age > 10) {
       despawnBullet(b)
       continue
     }
@@ -230,13 +407,18 @@ export function gameSystem(dt: number) {
       currentTargetDist = distToPlayer
       currentTargetOnLane = onLane
     }
-    if (onLane && distToPlayer < nearestDist) {
+    if (inPit && !stats.knockedOut && onLane && distToPlayer < nearestDist) {
       nearest = b
       nearestDist = distToPlayer
     }
 
-    // Hit: knockback + flash, no death, no score
-    if (distToPlayer < HIT_DIST && iframe <= 0 && playerT && playerT.position.y < 2.2) {
+    // Hit: knockback + flash; streak resets on any hit, knockout on the 3rd in a wave.
+    // Vertical band: a jump that visibly clears the bullet must not count —
+    // hits were horizontal-only before (owner, H2-01 pass 1).
+    const bulletTop = t.position.y + BULLET_SCALE / 2
+    const bulletBottom = t.position.y - BULLET_SCALE / 2
+    const vertOverlap = bulletTop > py + 0.2 && bulletBottom < py + 1.55
+    if (distToPlayer < HIT_DIST && vertOverlap && iframe <= 0 && inPit && !stats.knockedOut) {
       Physics.applyKnockbackToPlayer(
         Vector3.create(t.position.x, t.position.y, t.position.z),
         KNOCKBACK_MAG,
@@ -247,19 +429,33 @@ export function gameSystem(dt: number) {
       stats.hitFlash = 1
       iframe = IFRAME_TIME
       despawnBullet(b)
-      console.log(`SMOKE hit: wave=${stats.wave} timesHit=${stats.timesHit}`)
+      if (!stats.resting) {
+        stats.hitsThisWave++
+        stats.streak = 0
+        if (stats.hitsThisWave >= HITS_PER_KNOCKOUT) {
+          knockout(px, pz)
+        } else {
+          setBanner(`HIT ${stats.hitsThisWave}/${HITS_PER_KNOCKOUT} — STREAK LOST`, 2)
+          console.log(`SMOKE hit: ${stats.hitsThisWave}/${HITS_PER_KNOCKOUT} timesHit=${stats.timesHit}`)
+        }
+      } else {
+        // tail bullets in the rest gap sting but the wave already ended —
+        // knockback only, no knockout, no streak reset (greybox simplification)
+        console.log(`SMOKE rest-gap hit: timesHit=${stats.timesHit}`)
+      }
     }
   }
   stats.bullets = liveCount
 
-  // --- Resolve the single blue target: none while E recharges; otherwise the
-  // current one keeps blue while still threatening (no flicker), else the nearest ---
-  if (stats.deflectCooldown > 0) {
+  // --- Resolve the single blue target: none while E recharges or while
+  // knocked out; otherwise the current one keeps blue while still
+  // threatening (no flicker), else the nearest ---
+  if (stats.deflectCooldown > 0 || stats.knockedOut || !inPit) {
     currentTarget = null
   } else if (currentTarget && (!currentTarget.active || !currentTargetOnLane || currentTargetDist > TELEGRAPH_EXIT)) {
     currentTarget = null
   }
-  if (!currentTarget && stats.deflectCooldown <= 0) currentTarget = nearest
+  if (!currentTarget && stats.deflectCooldown <= 0 && !stats.knockedOut && inPit) currentTarget = nearest
 
   for (const b of pool) {
     if (!b.active || b.state === 'deflected') continue
@@ -267,14 +463,16 @@ export function gameSystem(dt: number) {
     if (b.state !== should) setBulletState(b, should)
   }
 
-  // --- Deflect: E sends the blue bullet where the camera points ---
-  // Look-see (2026-08-13, owner): aimed deflect instead of auto-return to the
-  // emitter — camera forward flattened to the bullet plane. Falls back to the
-  // emitter direction if the camera points straight up/down. Targeting unchanged.
-  if (inputSystem.isTriggered(InputAction.IA_PRIMARY, PointerEventType.PET_DOWN) && stats.deflectCooldown <= 0) {
+  // --- Deflect: E sends the blue bullet where the camera points (aimed —
+  // decision 2026-08-13). A knocked-out spectator has no E. ---
+  if (
+    inputSystem.isTriggered(InputAction.IA_PRIMARY, PointerEventType.PET_DOWN) &&
+    stats.deflectCooldown <= 0 &&
+    !stats.knockedOut &&
+    inPit
+  ) {
     stats.deflectCooldown = DEFLECT_COOLDOWN
     stats.deflectAttempts++
-    console.log(`SMOKE deflect attempt: ${stats.deflectAttempts} (hits so far ${stats.deflectHits})`)
     const target = currentTarget
     if (target) {
       stats.deflectHits++

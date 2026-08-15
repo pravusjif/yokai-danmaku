@@ -1,4 +1,4 @@
-import { engine, Transform, MeshRenderer, MeshCollider, Material } from '@dcl/sdk/ecs'
+import { engine, Entity, Transform, MeshRenderer, MeshCollider, Material, Billboard, BillboardMode } from '@dcl/sdk/ecs'
 import { Vector3, Quaternion, Color4, Color3 } from '@dcl/sdk/math'
 
 export const CENTER_X = 16
@@ -55,4 +55,55 @@ export function buildArena() {
     emissiveColor: Color3.create(0.7, 0.3, 1),
     emissiveIntensity: 3
   })
+
+  buildYokaiBar()
+}
+
+// --- Yokai life bar — primitives over the pit, always facing the player.
+// Fill is left-anchored under a pivot so it drains from the right.
+const BAR_WIDTH = 4
+let barFill: Entity | null = null
+
+function buildYokaiBar() {
+  const root = engine.addEntity()
+  Transform.create(root, { position: Vector3.create(CENTER_X, 3.6, CENTER_Z) })
+  Billboard.create(root, { billboardMode: BillboardMode.BM_Y })
+
+  const bg = engine.addEntity()
+  Transform.create(bg, {
+    parent: root,
+    scale: Vector3.create(BAR_WIDTH + 0.3, 0.4, 0.05)
+  })
+  MeshRenderer.setBox(bg)
+  Material.setPbrMaterial(bg, {
+    albedoColor: Color4.create(0.05, 0.05, 0.08, 1),
+    metallic: 0,
+    roughness: 1
+  })
+
+  const pivot = engine.addEntity()
+  Transform.create(pivot, { parent: root, position: Vector3.create(-BAR_WIDTH / 2, 0, 0) })
+
+  barFill = engine.addEntity()
+  Transform.create(barFill, {
+    parent: pivot,
+    // thicker than the bg box so the fill protrudes on both faces of the
+    // billboard — an offset inside the bg leaves it occluded from one side
+    position: Vector3.create(BAR_WIDTH / 2, 0, 0),
+    scale: Vector3.create(BAR_WIDTH, 0.3, 0.15)
+  })
+  MeshRenderer.setBox(barFill)
+  Material.setPbrMaterial(barFill, {
+    albedoColor: Color4.create(1, 0.2, 0.7, 1),
+    emissiveColor: Color3.create(1, 0.2, 0.7),
+    emissiveIntensity: 4
+  })
+}
+
+export function updateYokaiBar(frac: number) {
+  if (!barFill) return
+  const f = Math.max(0, Math.min(1, frac))
+  const t = Transform.getMutable(barFill)
+  t.scale.x = BAR_WIDTH * f
+  t.position.x = (BAR_WIDTH * f) / 2
 }

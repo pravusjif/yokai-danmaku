@@ -1,9 +1,12 @@
 {
   "ecs7": true,
   "runtimeVersion": "7",
+  "requiredPermissions": [
+    "ALLOW_TO_MOVE_PLAYER_INSIDE_SCENE"
+  ],
   "display": {
-    "title": "H1-01 weave+deflect greybox",
-    "description": "Find-the-fun greybox: one repeating bullet pattern, timed deflect. Experiment H1-01.",
+    "title": "H2 core-loop greybox",
+    "description": "Core-loop greybox: yokai life bar, death rule, wipe reset on the H1 weave+deflect verb. Experiments H2-01/H2-02/H2-03.",
     "navmapThumbnail": "images/scene-thumbnail.png",
     "favicon": "favicon_asset"
   },
@@ -51,5 +54,6 @@
   "featureToggles": {
     "voiceChat": "enabled",
     "portableExperiences": "enabled"
-  }
+  },
+  "authoritativeMultiplayer": true
 }

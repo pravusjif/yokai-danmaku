@@ -1,5 +1,7 @@
 # Decision history — append-only, newest first
 
+- 2026-08-15 · Death rule amended: knockout on the **3rd** hit in a wave, not the 1st (any hit still resets the personal clean streak; solo wipe rule unchanged) · owner call at first H2-01 launch — one hit ending the wave read as too punishing. Amends the 2026-08-14 death rule; feel-check continues inside H2-01.
+
 - 2026-08-14 · Roster maps to rounds by difficulty tiers + random draw (prefer not-seen-today), never a fixed per-round ladder · owner took it over the ladder, which makes deep scrapbook pages unreachable ("a grind disguised as a set"). Deep tiers = rare skill-gated pages; mega-yokai = attendance pages; v1 slice deferred to §9 arithmetic.
 
 - 2026-08-14 · Day-7 state is named: league rank tier (rim + over-head), lifetime personal best, Great Haunting charms on the avatar, scrapbook x/N · long-term goal is the Exorcist wearable (4 Great Haunting banishments, calendar-gated ~1 month, charm-visible during the climb) · owner took the three proposed pieces and added the scrapbook.
