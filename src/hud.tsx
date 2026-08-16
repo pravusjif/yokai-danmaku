@@ -18,8 +18,9 @@ function copyStats() {
     `H2 run=${stats.runs} round=${stats.round} wave=${stats.waveInRound} deepest=${stats.deepestRound} ` +
     `streak=${stats.streak}/${stats.bestStreak} hp=${stats.yokaiHp}/${stats.yokaiMaxHp} ` +
     `deflects=${stats.deflectHits}/${stats.deflectAttempts} yokaiHits=${stats.yokaiHits} timesHit=${stats.timesHit} ` +
+    `wallHits=${stats.wallHits} spiralHits=${stats.spiralHits} volleys=${stats.volleys} ` +
     `camp=${stats.campPct}% lastWaveCamp=${stats.lastWaveCampPct}% ` +
-    `wavesCompleted=${stats.wavesCompleted} bullets=${stats.bullets} fps=${stats.fps} minFps=${stats.minFps}`
+    `wavesCompleted=${stats.wavesCompleted} bullets=${stats.bullets} peak=${stats.peakBullets} fps=${stats.fps} minFps=${stats.minFps}`
   copiedFlashUntil = Date.now() + 1500
   copyToClipboard({ text }).catch(() => {
     console.log('copyToClipboard failed; data line: ' + text)
@@ -77,7 +78,7 @@ function Hud() {
           24,
           stats.deflectCooldown > 0 ? Color4.create(0.45, 0.45, 0.45, 1) : Color4.White()
         )}
-        {line(`times hit: ${stats.timesHit}`)}
+        {line(`times hit: ${stats.timesHit} (wall ${stats.wallHits} · spiral ${stats.spiralHits})`)}
         {line(
           `camp ${stats.campPct}%` + (stats.lastWaveCampPct >= 0 ? ` (last wave ${stats.lastWaveCampPct}%)` : ''),
           20,

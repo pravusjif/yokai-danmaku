@@ -39,6 +39,15 @@ export const stats = {
   yokaiHits: 0, // deflected bullets that flew back into the emitter (bar damage)
   timesHit: 0,
 
+  // --- H2-03 pattern law instruments ---
+  volleys: 0, // wall volleys emitted this sitting
+  wallHits: 0, // hits taken from wall pillars (session total)
+  spiralHits: 0, // hits taken from spiral bullets (session total)
+  wallHitsWave: 0, // per-wave split — which element is doing the anti-camping work
+  spiralHitsWave: 0,
+  peakBullets: 0, // max simultaneous live projectiles (walls brush the H1-03 budget)
+  lastRing1Gap: -1, // current wall's gap azimuth in deg (smoke harness reads this)
+
   bullets: 0, // live projectile count
   fps: 0,
   minFps: 0, // session minimum, after a 5 s warmup

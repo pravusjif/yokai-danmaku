@@ -17,8 +17,8 @@ import { stats } from './state'
 import { CENTER_X, CENTER_Z, ARENA_RADIUS, updateYokaiBar } from './arena'
 
 // --- Tunables (log any change between owner passes in ## Sessions) ---
-// H1 verb tunables are FROZEN for H2-01: cooldown, telegraph, lane rule, speeds
-// all proved load-bearing in H1-01 and must not move under the life bar test.
+// H1 verb tunables stay FROZEN (cooldown, telegraph, lane rule, spiral speed).
+// Pattern tunables are UNFROZEN for H2-03 — any change logged per pass.
 const BULLET_SPEED = 4 // m/s, slow and fat per the brief
 const DEFLECT_SPEED = 6 // deflected bullets fly back faster — the ricochet must read
 const BULLET_SCALE = 0.6 // fat glowing sphere
@@ -55,19 +55,49 @@ const YOKAI_CORE_RADIUS = 1.2 // a deflected bullet inside this damages the bar
 const CAMP_RADIUS = 2.5
 const CAMP_LAG = 4
 const CAMP_SAMPLE = 0.5
+
+// --- H2-03 pattern law: one wall per volley, sweeping gap, E does not answer it ---
+// A single DEFLECTABLE wall is camp-food (smoke 2026-08-15: punch the dead-on
+// pillar every volley, stand in the hole), so walls never telegraph — "press
+// when blue" stays honest, and the only counterplay is being in the gap,
+// which sweeps. The two-ring cooldown-locked volley proved too hard as the
+// baseline (owner, pass 1) and is reserved as a hard-tier yokai signature.
+const WALL_SPEED = 2.5 // slow — readable from the rim, gap reachable from most azimuths
+const WALL_PILLARS = 60 // ray spacing ≤1.26 m in the pit: no standing seam between rays
+const WALL_GAP_DEG = 60 // one gap per wall; camper luck ~17%/volley → ~4 wall hits per camped wave
+const WALL_GAP_SWEEP = 80 // deg the gap advances per volley — never opens in the same place
+const VOLLEY_FIRST_AT = 5 // s of wave time
+const VOLLEY_PERIOD = 7 // → 5 volleys per 35 s wave (8 let a lucky camper banish — smoke 2026-08-15)
+const WALL_Y = 1.5
+const WALL_HALF_H = 1.8 // pillar top ≈3.3 m — walls cannot be jumped (spiral bullets still can)
+const WALL_SPAWN_RADIUS = 0.5
+const EMIT_PAUSE_AFTER_VOLLEY = 2.5 // spiral emission holds while a volley spawns — budget + readability
+// Bullets bloom from the core, not from a 1.2 m ring — closes the stand-on-the-
+// emitter sanctuary (spiral density saturates one-E-per-1.5s inside r≈3).
+const SPAWN_RADIUS = 0.3
+// The greybox pit edge is soft (flat floor to r≈13.5), so threat reaches the
+// whole floor: straddling the pit line is not a sanctuary. Only the raised
+// walkway (unreachable mid-wave without a knockout) is safe — its design role.
+// Deflect, telegraph and the camping meter stay pit-only.
+const DESPAWN_RADIUS = 13.8
+const FLOOR_HIT_RADIUS = 13.4
 // H1-03 density instrument: when > 0, bypass the wave clock and keep this many
 // bullets alive. 0 = normal game. Kept for the mobile re-test at stage close.
 const DENSITY_TEST = 0
 
 type BulletState = 'live' | 'telegraph' | 'deflected'
+type BulletKind = 'spiral' | 'wall'
 
 type Bullet = {
   entity: Entity
   active: boolean
   state: BulletState
+  kind: BulletKind
   dirX: number
   dirZ: number
   age: number
+  speed: number
+  halfH: number
 }
 
 const pool: Bullet[] = []
@@ -80,6 +110,10 @@ let iframe = 0
 let fpsFrames = 0
 let fpsTime = 0
 let sessionTime = 0
+// wall volley scheduler — reset per wave in resetWaveInstruments
+let nextVolleyAt = VOLLEY_FIRST_AT
+let gapAzimuth = Math.random() * 360
+let emitPauseUntil = 0
 // camping meter internals
 let campSamples: { x: number; z: number }[] = []
 let campAccum = 0
@@ -91,6 +125,15 @@ let knockbackCooldown = 0
 function setBulletState(b: Bullet, state: BulletState) {
   b.state = state
   if (state === 'live') {
+    if (b.kind === 'wall') {
+      // deep red — the wall: never flashes blue, E does not answer it, find the gap
+      Material.setPbrMaterial(b.entity, {
+        albedoColor: Color4.create(0.15, 0.02, 0, 1),
+        emissiveColor: Color3.create(1, 0.25, 0.1),
+        emissiveIntensity: 2
+      })
+      return
+    }
     // magenta — incoming
     Material.setPbrMaterial(b.entity, {
       albedoColor: Color4.create(0.15, 0, 0.1, 1),
@@ -114,24 +157,45 @@ function setBulletState(b: Bullet, state: BulletState) {
   }
 }
 
-function spawnBullet(angle: number) {
+function spawnBullet(angle: number, kind: BulletKind = 'spiral') {
   let b = pool.find((s) => !s.active)
   if (!b) {
     const entity = engine.addEntity()
     Transform.create(entity, { scale: Vector3.create(BULLET_SCALE, BULLET_SCALE, BULLET_SCALE) })
     MeshRenderer.setSphere(entity)
     VisibilityComponent.create(entity, { visible: true })
-    b = { entity, active: false, state: 'live', dirX: 0, dirZ: 0, age: 0 }
+    b = { entity, active: false, state: 'live', kind: 'spiral', dirX: 0, dirZ: 0, age: 0, speed: BULLET_SPEED, halfH: BULLET_SCALE / 2 }
     pool.push(b)
   }
   b.active = true
   b.age = 0
+  b.kind = kind
+  b.speed = kind === 'wall' ? WALL_SPEED : BULLET_SPEED
+  b.halfH = kind === 'wall' ? WALL_HALF_H : BULLET_SCALE / 2
   b.dirX = Math.cos(angle)
   b.dirZ = Math.sin(angle)
   const t = Transform.getMutable(b.entity)
-  t.position = Vector3.create(CENTER_X + b.dirX * 1.2, 1.0, CENTER_Z + b.dirZ * 1.2)
+  const spawnR = kind === 'wall' ? WALL_SPAWN_RADIUS : SPAWN_RADIUS
+  t.position = Vector3.create(CENTER_X + b.dirX * spawnR, kind === 'wall' ? WALL_Y : 1.0, CENTER_Z + b.dirZ * spawnR)
+  // pooled entities are reused across kinds — scale must be re-set every spawn
+  t.scale = kind === 'wall'
+    ? Vector3.create(BULLET_SCALE, WALL_HALF_H * 2, BULLET_SCALE)
+    : Vector3.create(BULLET_SCALE, BULLET_SCALE, BULLET_SCALE)
   VisibilityComponent.getMutable(b.entity).visible = true
   setBulletState(b, 'live')
+}
+
+// One wall ring: WALL_PILLARS rays minus a WALL_GAP_DEG arc around gapCenterDeg.
+// Random azimuthal phase per ring — a seam between rays can never be learned.
+function spawnWallRing(gapCenterDeg: number) {
+  const phase = Math.random() * 360
+  const step = 360 / WALL_PILLARS
+  for (let i = 0; i < WALL_PILLARS; i++) {
+    const az = phase + i * step
+    const toGap = Math.abs(((((az - gapCenterDeg) % 360) + 540) % 360) - 180)
+    if (toGap < WALL_GAP_DEG / 2) continue
+    spawnBullet((az * Math.PI) / 180, 'wall')
+  }
 }
 
 function despawnBullet(b: Bullet) {
@@ -151,11 +215,17 @@ function setBanner(text: string, seconds: number) {
 
 function resetWaveInstruments() {
   stats.hitsThisWave = 0
+  stats.wallHitsWave = 0
+  stats.spiralHitsWave = 0
   campSamples = []
   campAccum = 0
   campTime = 0
   pitTime = 0
   stats.campPct = 0
+  // wall volley scheduler: fresh gap start each wave — never the same place
+  nextVolleyAt = VOLLEY_FIRST_AT
+  gapAzimuth = Math.random() * 360
+  emitPauseUntil = 0
 }
 
 // density factor for the current round/wave — the ramp IS the difficulty curve
@@ -213,7 +283,8 @@ function logWaveLine(end: 'clean' | 'hit' | 'wipe' | 'banish') {
   console.log(
     `SMOKE wave end (${end}): round=${stats.round} waveInRound=${stats.waveInRound} camp=${camp}% ` +
       `streak=${stats.streak} hp=${stats.yokaiHp}/${stats.yokaiMaxHp} deflects=${stats.deflectHits}/${stats.deflectAttempts} ` +
-      `yokaiHits=${stats.yokaiHits} timesHit=${stats.timesHit} fps=${stats.fps} bullets=${stats.bullets}`
+      `yokaiHits=${stats.yokaiHits} timesHit=${stats.timesHit} waveHits=${stats.wallHitsWave}wall+${stats.spiralHitsWave}spiral ` +
+      `fps=${stats.fps} bullets=${stats.bullets} peak=${stats.peakBullets}`
   )
 }
 
@@ -293,20 +364,37 @@ export function gameSystem(dt: number) {
         stats.restLeft = WAVE_REST_TIME
       }
     } else {
-      // --- Emit the spiral. Density ramps with round/wave; the step wobbles
-      // and the direction flips each wave, so safe lanes sweep and never
-      // reopen in the same place (H2-03 rides on this). ---
-      const d = density()
-      const tick = EMIT_TICK / d
       const sweepDir = stats.wave % 2 === 0 ? -1 : 1
-      emitAccum += dt
-      while (emitAccum >= tick) {
-        emitAccum -= tick
-        for (let arm = 0; arm < ARMS; arm++) {
-          spawnBullet(((spiralAngle + (360 / ARMS) * arm) * Math.PI) / 180)
+
+      // --- Wall volleys (H2-03's law): one undeflectable wall, sweeping gap.
+      // The wave's sweep direction drives the gap. ---
+      if (stats.waveTime >= nextVolleyAt) {
+        spawnWallRing(gapAzimuth)
+        stats.lastRing1Gap = Math.round(((gapAzimuth % 360) + 360) % 360)
+        gapAzimuth += WALL_GAP_SWEEP * sweepDir
+        nextVolleyAt += VOLLEY_PERIOD
+        emitPauseUntil = stats.waveTime + EMIT_PAUSE_AFTER_VOLLEY
+        stats.volleys++
+        console.log(`SMOKE volley ${stats.volleys}: gap=${stats.lastRing1Gap} wave=${stats.wave}`)
+      }
+
+      // --- Emit the spiral. Density ramps with round/wave; the step wobbles
+      // and the direction flips each wave. Emission holds briefly while a
+      // volley spawns — bullet budget and wall readability. ---
+      if (stats.waveTime >= emitPauseUntil) {
+        const d = density()
+        const tick = EMIT_TICK / d
+        emitAccum += dt
+        while (emitAccum >= tick) {
+          emitAccum -= tick
+          for (let arm = 0; arm < ARMS; arm++) {
+            spawnBullet(((spiralAngle + (360 / ARMS) * arm) * Math.PI) / 180)
+          }
+          const step = STEP_DEG + SWEEP_AMP * Math.sin(stats.waveTime * SWEEP_RATE)
+          spiralAngle = (spiralAngle + sweepDir * step + 360) % 360
         }
-        const step = STEP_DEG + SWEEP_AMP * Math.sin(stats.waveTime * SWEEP_RATE)
-        spiralAngle = (spiralAngle + sweepDir * step + 360) % 360
+      } else {
+        emitAccum = 0 // hold — don't bank spiral ticks during the pause
       }
     }
   }
@@ -318,9 +406,11 @@ export function gameSystem(dt: number) {
   const prx = px - CENTER_X
   const prz = pz - CENTER_Z
   const playerR = Math.sqrt(prx * prx + prz * prz)
-  // In the pit = on the arena floor, below the walkway. Targeting, hits and
-  // the camping meter all key off this.
+  // In the pit = inside the pit radius, below the walkway. Targeting, deflect
+  // and the camping meter key off this. Hits use the wider floor zone: the
+  // greybox pit edge is soft, and straddling it must not be a sanctuary (H2-03).
   const inPit = playerT !== null && playerT.position.y < 2.2 && playerR < ARENA_RADIUS
+  const onFloor = playerT !== null && playerT.position.y < 2.2 && playerR < FLOOR_HIT_RADIUS
 
   if (iframe > 0) iframe -= dt
   if (knockbackCooldown > 0) knockbackCooldown -= dt
@@ -364,7 +454,7 @@ export function gameSystem(dt: number) {
     if (!b.active) continue
     liveCount++
     b.age += dt
-    const speed = b.state === 'deflected' ? DEFLECT_SPEED : BULLET_SPEED
+    const speed = b.state === 'deflected' ? DEFLECT_SPEED : b.speed
     const t = Transform.getMutable(b.entity)
     t.position.x += b.dirX * speed * dt
     t.position.z += b.dirZ * speed * dt
@@ -386,8 +476,8 @@ export function gameSystem(dt: number) {
       continue
     }
 
-    // Despawn: left the arena or expired
-    if (rFromCenter > ARENA_RADIUS || b.age > 10) {
+    // Despawn: left the floor or expired
+    if (rFromCenter > DESPAWN_RADIUS || b.age > 10) {
       despawnBullet(b)
       continue
     }
@@ -407,18 +497,19 @@ export function gameSystem(dt: number) {
       currentTargetDist = distToPlayer
       currentTargetOnLane = onLane
     }
-    if (inPit && !stats.knockedOut && onLane && distToPlayer < nearestDist) {
+    // walls are never deflect targets — E does not answer the wall (H2-03 law)
+    if (b.kind !== 'wall' && inPit && !stats.knockedOut && onLane && distToPlayer < nearestDist) {
       nearest = b
       nearestDist = distToPlayer
     }
 
     // Hit: knockback + flash; streak resets on any hit, knockout on the 3rd in a wave.
     // Vertical band: a jump that visibly clears the bullet must not count —
-    // hits were horizontal-only before (owner, H2-01 pass 1).
-    const bulletTop = t.position.y + BULLET_SCALE / 2
-    const bulletBottom = t.position.y - BULLET_SCALE / 2
+    // per-bullet half-height, so spiral spheres stay jumpable and wall pillars don't.
+    const bulletTop = t.position.y + b.halfH
+    const bulletBottom = t.position.y - b.halfH
     const vertOverlap = bulletTop > py + 0.2 && bulletBottom < py + 1.55
-    if (distToPlayer < HIT_DIST && vertOverlap && iframe <= 0 && inPit && !stats.knockedOut) {
+    if (distToPlayer < HIT_DIST && vertOverlap && iframe <= 0 && onFloor && !stats.knockedOut) {
       Physics.applyKnockbackToPlayer(
         Vector3.create(t.position.x, t.position.y, t.position.z),
         KNOCKBACK_MAG,
@@ -426,6 +517,13 @@ export function gameSystem(dt: number) {
         KnockbackFalloff.LINEAR
       )
       stats.timesHit++
+      if (b.kind === 'wall') {
+        stats.wallHits++
+        stats.wallHitsWave++
+      } else {
+        stats.spiralHits++
+        stats.spiralHitsWave++
+      }
       stats.hitFlash = 1
       iframe = IFRAME_TIME
       despawnBullet(b)
@@ -446,6 +544,7 @@ export function gameSystem(dt: number) {
     }
   }
   stats.bullets = liveCount
+  if (liveCount > stats.peakBullets) stats.peakBullets = liveCount
 
   // --- Resolve the single blue target: none while E recharges or while
   // knocked out; otherwise the current one keeps blue while still
