@@ -47,7 +47,7 @@ const RAMP_PER_WAVE = 0.06 // waves tighten within a round while the bar holds
 const MAX_DENSITY = 2.2 // cap ≈ 77 live bullets — H1-03 measured 112 fps at 150, safe
 const SWEEP_AMP = 7 // deg of wobble on the spiral step — safe lanes drift (H2-03's law)
 const SWEEP_RATE = 0.4 // wobble speed, rad/s of wave time
-const BANISH_REST = 6 // beat after a banish — "next round: denser"
+const BANISH_REST = 6 // banner seconds after a banish — play does not pause (owner, 2026-08-17)
 const WIPE_REST = 6 // beat after a wipe — "the yokai wins"
 const YOKAI_CORE_RADIUS = 1.2 // a deflected bullet inside this damages the bar
 // Camping meter: % of in-pit wave time spent within CAMP_RADIUS of where the
@@ -66,13 +66,15 @@ const WALL_SPEED = 2.5 // slow — readable from the rim, gap reachable from mos
 const WALL_PILLARS = 60 // ray spacing ≤1.26 m in the pit: no standing seam between rays
 const WALL_GAP_DEG = 60 // per-gap arc; camper luck ~33%/volley with two gaps → ~3.3 wall hits per camped wave (knockout still expected inside a wave)
 const WALL_GAP_COUNT = 2 // gaps per wall, evenly spaced (owner, H2-03 pass 2) — second entrance opposite the first, both sweep together
-const WALL_GAP_SWEEP = 80 // deg the gap advances per volley — never opens in the same place
+// gap azimuth rerolls randomly every volley (owner, 2026-08-17) — the 80°/volley
+// deterministic sweep was learnable and read as repetitive; camper luck is
+// unchanged at ~33%/volley (two 60° entrances), each volley now independent
 const VOLLEY_FIRST_AT = 5 // s of wave time
 const VOLLEY_PERIOD = 7 // → 5 volleys per 35 s wave (8 let a lucky camper banish — smoke 2026-08-15)
 const WALL_Y = 1.5
 const WALL_HALF_H = 1.8 // pillar top ≈3.3 m — walls cannot be jumped (spiral bullets still can)
 const WALL_SPAWN_RADIUS = 0.5
-const EMIT_PAUSE_AFTER_VOLLEY = 2.5 // spiral emission holds while a volley spawns — budget + readability
+const EMIT_PAUSE_AFTER_VOLLEY = 0 // spiral keeps firing through wall volleys (owner, 2026-08-17 — the hold read as a pause); minFps + peak watch the bullet budget
 // Bullets bloom from the core, not from a 1.2 m ring — closes the stand-on-the-
 // emitter sanctuary (spiral density saturates one-E-per-1.5s inside r≈3).
 const SPAWN_RADIUS = 0.3
@@ -265,8 +267,13 @@ function banish() {
   stats.yokaiHp = stats.yokaiMaxHp
   updateYokaiBar(1)
   stats.knockedOut = false
-  stats.resting = true
-  stats.restLeft = BANISH_REST
+  // no rest beat on a banish: the next yokai opens fire immediately and the
+  // banner hangs over live play (owner, 2026-08-17 — the spawn pause read as
+  // dead air). Wave rest and wipe rest keep their breather.
+  stats.resting = false
+  stats.wave++
+  stats.waveTime = 0
+  resetWaveInstruments()
   setBanner(`YOKAI BANISHED — ROUND ${stats.round}: DENSER`, BANISH_REST)
   console.log(`SMOKE banish: now round=${stats.round} runs=${stats.runs} deepest=${stats.deepestRound}`)
 }
@@ -377,12 +384,12 @@ export function gameSystem(dt: number) {
     } else {
       const sweepDir = stats.wave % 2 === 0 ? -1 : 1
 
-      // --- Wall volleys (H2-03's law): one undeflectable wall, sweeping gap.
-      // The wave's sweep direction drives the gap. ---
+      // --- Wall volleys (H2-03's law): one undeflectable wall, entrances at a
+      // fresh random azimuth every volley — never learnable. ---
       if (stats.waveTime >= nextVolleyAt) {
         spawnWallRing(gapAzimuth)
         stats.lastRing1Gap = Math.round(((gapAzimuth % 360) + 360) % 360)
-        gapAzimuth += WALL_GAP_SWEEP * sweepDir
+        gapAzimuth = Math.random() * 360
         nextVolleyAt += VOLLEY_PERIOD
         emitPauseUntil = stats.waveTime + EMIT_PAUSE_AFTER_VOLLEY
         stats.volleys++
