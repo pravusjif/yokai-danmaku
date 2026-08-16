@@ -64,7 +64,8 @@ const CAMP_SAMPLE = 0.5
 // baseline (owner, pass 1) and is reserved as a hard-tier yokai signature.
 const WALL_SPEED = 2.5 // slow — readable from the rim, gap reachable from most azimuths
 const WALL_PILLARS = 60 // ray spacing ≤1.26 m in the pit: no standing seam between rays
-const WALL_GAP_DEG = 60 // one gap per wall; camper luck ~17%/volley → ~4 wall hits per camped wave
+const WALL_GAP_DEG = 60 // per-gap arc; camper luck ~33%/volley with two gaps → ~3.3 wall hits per camped wave (knockout still expected inside a wave)
+const WALL_GAP_COUNT = 2 // gaps per wall, evenly spaced (owner, H2-03 pass 2) — second entrance opposite the first, both sweep together
 const WALL_GAP_SWEEP = 80 // deg the gap advances per volley — never opens in the same place
 const VOLLEY_FIRST_AT = 5 // s of wave time
 const VOLLEY_PERIOD = 7 // → 5 volleys per 35 s wave (8 let a lucky camper banish — smoke 2026-08-15)
@@ -185,15 +186,25 @@ function spawnBullet(angle: number, kind: BulletKind = 'spiral') {
   setBulletState(b, 'live')
 }
 
-// One wall ring: WALL_PILLARS rays minus a WALL_GAP_DEG arc around gapCenterDeg.
+// One wall ring: WALL_PILLARS rays minus WALL_GAP_COUNT evenly-spaced
+// WALL_GAP_DEG arcs, the first centered on gapCenterDeg.
 // Random azimuthal phase per ring — a seam between rays can never be learned.
 function spawnWallRing(gapCenterDeg: number) {
   const phase = Math.random() * 360
   const step = 360 / WALL_PILLARS
+  const gapSpacing = 360 / WALL_GAP_COUNT
   for (let i = 0; i < WALL_PILLARS; i++) {
     const az = phase + i * step
-    const toGap = Math.abs(((((az - gapCenterDeg) % 360) + 540) % 360) - 180)
-    if (toGap < WALL_GAP_DEG / 2) continue
+    let inGap = false
+    for (let g = 0; g < WALL_GAP_COUNT; g++) {
+      const center = gapCenterDeg + g * gapSpacing
+      const toGap = Math.abs(((((az - center) % 360) + 540) % 360) - 180)
+      if (toGap < WALL_GAP_DEG / 2) {
+        inGap = true
+        break
+      }
+    }
+    if (inGap) continue
     spawnBullet((az * Math.PI) / 180, 'wall')
   }
 }

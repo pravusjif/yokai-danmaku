@@ -1,5 +1,9 @@
 # Decision history — append-only, newest first
 
+- 2026-08-17 · Standing pattern-design law: **every yokai attack pattern — every yokai, every wave of the same yokai — must carry an anti-camping element**; no authored pattern may be winnable from one 2.5 m spot · owner call at H2-03 close — H2-01 proved the bar makes camping the correct play whenever a pattern permits it, and H2-03 proved a pattern law can refuse it, so anti-camping is a per-pattern authoring requirement, not a property of one wall mechanic. Acceptance test inherited from H2-03: the camping-meter probe (majority-camped round must end in knockout before banish).
+
+- 2026-08-17 · Baseline walls carry **two 60° entrances**, directly opposite, sweeping together (`WALL_GAP_COUNT = 2`) · owner call during H2-03 pass 2 — one entrance felt too punishing for movers; the probe round re-measured under the friendlier law and camping still lost everywhere (H2-03 validated same day), so the extra entrance costs nothing the law needs.
+
 - 2026-08-15 · The baseline anti-camping wall is ONE ring per volley, undeflectable (never telegraphs — "press when blue" stays honest; counterplay is the sweeping gap); the two-ring cooldown-locked volley is reserved as a hard-tier yokai signature · owner call during H2-03 pass 1 — the double wall made the base loop "extremely difficult"; a single deflectable wall was smoke-proven camp-food (E punches a hole every volley), so undeflectable is the consequence that keeps the law able to refuse camping.
 
 - 2026-08-15 · Death rule amended: knockout on the **3rd** hit in a wave, not the 1st (any hit still resets the personal clean streak; solo wipe rule unchanged) · owner call at first H2-01 launch — one hit ending the wave read as too punishing. Amends the 2026-08-14 death rule; feel-check continues inside H2-01.
