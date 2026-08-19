@@ -5,10 +5,10 @@
 
 | | |
 |---|---|
-| Experience name | |
-| Studio / team name | |
-| Date | |
-| Contact (Discord + email) | |
+| Experience name | **Yokai Danmaku** |
+| Studio / team name | Pravus (solo) |
+| Date | 2026-08-19 |
+| Contact (Discord + email) | `TBD: Discord handle` + pravus@decentraland.org |
 
 ---
 
@@ -29,14 +29,12 @@ What we fund: **social-first, replayable, mobile-ready experiences with clear pr
 
 ## 0. TL;DR
 
-*Fill this table last, after everything else. A reviewer reads it first.*
-
 | | |
 |---|---|
-| **One-line concept** | |
-| **Team & total hours/week** | e.g. "2 people, ~30h/week combined" |
-| **Current status** | idea / sketches / greybox / core-mechanic prototype / playable core loop / vertical slice in a World — **link anything playable; playable evidence is the strongest plus in review** |
-| **Live at end of Week 6** | one sentence: what a player can do in your World |
+| **One-line concept** | A shared bullet-hell arena in haunted neo-Tokyo: every avatar survives the same yokai's pattern together, and timed deflects are the only way to banish it. |
+| **Team & total hours/week** | Solo (Pravus), ~20h/week |
+| **Current status** | Playable core-loop greybox in SDK7 (desktop Explorer) — the H1/H2 experiment builds in this repo: aimed deflect at 92% intended-hit rate, 150 projectiles at 112 fps, anti-camping machine-verified. `TBD: public link before submission` |
+| **Live at end of Week 6** | Players drop into a persistent arena to banish escalating yokai together — with a weekly haunting board, a filling scrapbook, and a Friday Great Haunting. |
 | **Requested round** | v1 |
 
 ---
@@ -87,11 +85,7 @@ The last thing you see before leaving: the rim board catching your name — this
 
 ## 4. Why Players Come Back
 
-*This is the section we grade hardest.*
-
-*Hard fact about the platform: **Decentraland cannot send push notifications.** Nothing will remind a player that your experience exists. The reason to return must live in the player's own memory ("my crop is ready at 6pm", "the leaderboard resets Sunday") or in their friends ("my crew races every Friday").*
-
-*A simple way to think about it: **Day 1 is bought with fun, Day 7 with appointments, Day 30 with friends.***
+Decentraland cannot send push notifications, so every hook below lives in the player's own memory or their calendar — nothing here assumes a reminder the platform cannot send.
 
 ### 4.1 The Day-2 sentence
 
@@ -103,18 +97,7 @@ The mark decays toward the Sunday reset, so it is always time-anchored; defense-
 
 A Day-7 player has, by name: a **league rank tier** from Sunday's final standing, shown on the rim beside their name and over their head in the arena; a **lifetime personal best** (deepest round ever, never resets) standing next to their weekly mark; **1–2 Great Haunting charms** already hanging visibly on their avatar (§4.4); and a **scrapbook filling in** — x/N yokai revealed from silhouette, one for each yokai whose banishment they stood through (§4.3, hook 3). The skill is persistent too: they read patterns a wave earlier than they did on Day 1.
 
-### 4.3 Your return hooks — pick at least two
-
-| Hook | Why it works without push notifications |
-|---|---|
-| **Appointment timer** — something finishes, respawns or unlocks at a known future time | The player's memory is the notification ("ready at 18:00") |
-| **Daily goals + streak** — rotating daily tasks, escalating reward track | Loss aversion; use milestone recovery, never punishing resets |
-| **Weekly leaderboard reset / small leagues** — rank inside small groups, fresh start weekly | Near-zero content cost; automatic weekly event; deadline drives a surge |
-| **Collection** — visible x/N progress toward a displayable reward | An unfinished set feels unfinished (proven effect); evergreen once shipped |
-| **Recurring scheduled event** — e.g. every Friday 20:00 UTC | The event calendar is your real notification system (in-world + Discord) |
-| **Team / crew obligation** — small persistent groups with shared goals | "My crew expects me" is the strongest known retention force |
-| **Season track** — a free time-limited progress track, 6–8 weeks | Deadline + comeback moment at each new season; align with the program's cycles |
-| **Async traces** — things players leave behind that others discover later | The world feels alive even at quiet hours; zero ongoing cost |
+### 4.3 Return hooks — three chosen
 
 **Hook 1 — Weekly small-league haunting board.** Your mark is the highest round in which you were **standing in the pit when its yokai was banished** — present and alive, not spectating from the walkway. That keeps the mark personal even though the run is collective, and it cannot be farmed by camping — H2-03's pattern law refuses that, measured (validated 2026-08-17). League size is settled by arithmetic (H2-04 paper rung, validated 2026-08-19): **brackets of 20, grouped as players first place each week, with the remainder folding into the last bracket** — a bracket is 20–39 people, and below 40 weekly placers (the realistic v1 case at DCL traffic — owner estimate 2026-08-19) the board is simply one weekly league of everyone. In the expected case the median player has ~7 beatable marks within 2 rounds, so a mid-table mark genuinely will not survive the week. Never one large global board: past ~40 placers the split keeps ranks contested. Known by the same arithmetic: the bracket's #1 is usually a runaway outlier — the board's pull is mid-table mark defense, never "beat the #1". Resets Sunday 00:00 UTC; the arena rim shows your league, your mark, and the countdown. The behaviour claim — placers return on Day 2 at a visibly higher rate — waits for the live v1 funnel. `[HYPOTHESIS → H2-04]`
 
@@ -129,8 +112,6 @@ A Day-7 player has, by name: a **league rank tier** from Sunday's final standing
 ---
 
 ## 5. Social by Design
-
-*Program requirement: playable alone, better with others. "Better with others" must be designed, not hoped for.*
 
 - **What is better — not just possible — when 2+ players are present?** (decided 2026-08-17)
 
@@ -185,8 +166,6 @@ A Day-7 player has, by name: a **league rank tier** from Sunday's final standing
 
 **Visual direction.** Ghostwire: Tokyo (rain-slick neon shrine streets, yokai in a modern city) · NieR: Automata's glowing-orb bullet language (fat, slow, readable projectiles) · Akira's Neo-Tokyo night palette. Rendered as stylized PBR with baked lighting, consistent with Genesis Plaza quality. `[agent-decided — owner named the direction ("cyberpunk yokai"); references chosen to match it]`
 
-**Required: at least one image.**
-
 ![H1-01 greybox — sunken arena, walkway ring, one pattern mid-bloom](01-find-the-fun/H1-01-greybox.png)
 
 *Greybox screenshot from the H1-01 build (desktop Explorer, 2026-08-13): the sunken arena with its walkway ring, one spiral pattern mid-bloom around the emitter. Primitives only — the yokai art direction above is not yet built.*
@@ -205,7 +184,7 @@ A Day-7 player has, by name: a **league rank tier** from Sunday's final standing
 
 ## 9. Six-Week Plan (v1 scope)
 
-*Program milestones are fixed: **Week 2** — functional test version of the core loop (basic single-player and multiplayer working). **Week 6** — live in your own World, public repository delivered.*
+Program milestones are fixed: **Week 2** — functional test version of the core loop (basic single-player and multiplayer working). **Week 6** — live in your own World, public repository delivered.
 
 **V1 content slice (decided 2026-08-18 — arithmetic against §11's ~120 h):** the build window is ~95 h after weeks 5–6 go to live testing and sign-off; systems eat ~77 h of it (multiplayer sync ~30 · retention systems: board, scrapbook, Great Haunting template, charms ~22 · arena art pass ~15 · FTUE, sound + tooltips, polish ~10), leaving **~20–25 h for yokai content**. Art plan (a): owner-built stylized low-poly, emissive materials, §7 direction. The Great Haunting mega-yokai gets its **own dedicated model** (owner call 2026-08-18 — the weekly event must look like an event, never a re-dress): ~8 h with its round template. The honest slice is therefore **3–4 regular yokai across 2 tiers + 1 mega-yokai**; ~30 yokai stays program-lifetime ambition (§4.3), and the scrapbook panel only ever shows the shipped roster. The plan self-corrects in week 1: H2-07 times the first production yokai — ≤6 h all-in and the slice is 4+mega; over, and the floor is 3+mega. `[HYPOTHESIS → H2-07]`
 
@@ -231,7 +210,7 @@ A Day-7 player has, by name: a **league rank tier** from Sunday's final standing
 
 **Top risk + fallback (decided 2026-08-18).** **Multiplayer sync of the shared pattern.** The entire twist — everyone survives the *same* pattern, your deflect punches a hole *others* dive through — dies if clients disagree about where bullets are. Syncing ~150 bullets as networked entities is infeasible. **Plan A (the design):** the pattern is deterministic — generated locally from a shared seed + synced round clock — and only sparse events cross the network (deflects ≈ 1 per player per 1.5 s, hits, bar damage, knockouts). **Plan B if event latency makes deflect holes arrive late on other screens:** widen the hole radius and add a grace window so a late hole still reads as help. **Plan C, the floor that keeps the game shippable:** shared bar and shared run, per-client pattern phase — the collective fight survives even if bullet-level simultaneity doesn't. Week 1's sync spike exists to find out which plan we live on before week 2's milestone.
 
-*Rule of three: anywhere you list content (levels, minigames, items), give at most 3 examples. Three shows variety; ten shows unscoped ambition.*
+**Live-ops cost:** both weekly events are automated by design — the board resets itself Sunday 00:00 UTC and the Great Haunting is one reusable template with no host — so a live week costs **≤1 person-day** (monitoring, the Discord announcement, and whatever the funnel says to tune).
 
 ---
 

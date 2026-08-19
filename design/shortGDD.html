@@ -1,118 +1,158 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yokai Arena — shortGDD render</title>
+<title>Yokai Danmaku — shortGDD (stage 2)</title>
 <style>
-  :root {
-    --bg: #0b0d14; --panel: #12151f; --edge: #232838;
-    --ink: #d9dce6; --dim: #8a90a3; --neon: #47d7ff; --pink: #ff5c8a;
-    --gold: #ffd166; --ok: #6ee7a0;
+  :root{
+    --bg:#0b0e17; --card:#131829; --ink:#e8ecf8; --dim:#9aa3bf;
+    --neon:#7df1e2; --pink:#ff7ac2; --gold:#ffd479; --line:#26304d;
+    --ok:#7df19a; --warn:#ffd479; --bad:#ff8a8a;
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink);
-    font: 16px/1.6 -apple-system, "Segoe UI", Roboto, sans-serif; }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 40px 20px 80px; }
-  header { border-bottom: 1px solid var(--edge); padding-bottom: 24px; margin-bottom: 32px; }
-  h1 { margin: 0 0 4px; font-size: 2rem; color: var(--neon); letter-spacing: .02em; }
-  .stamp { color: var(--dim); font-size: .85rem; }
-  .stagebar { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
-  .stagebar span { font-size: .8rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--edge); color: var(--dim); }
-  .stagebar .done { border-color: var(--ok); color: var(--ok); }
-  .stagebar .now { border-color: var(--gold); color: var(--gold); }
-  h2 { font-size: 1.15rem; color: var(--pink); margin: 40px 0 12px; text-transform: uppercase; letter-spacing: .08em; }
-  .panel { background: var(--panel); border: 1px solid var(--edge); border-radius: 10px; padding: 18px 20px; }
-  .hook { font-size: 1.25rem; line-height: 1.5; border-left: 3px solid var(--neon); padding-left: 16px; }
-  table { border-collapse: collapse; width: 100%; font-size: .92rem; }
-  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--edge); vertical-align: top; }
-  th { color: var(--dim); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
-  .scroll { overflow-x: auto; }
-  .tag { font-size: .75rem; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
-  .t-ok { background: rgba(110,231,160,.12); color: var(--ok); }
-  .t-open { background: rgba(255,209,102,.12); color: var(--gold); }
-  .t-def { background: rgba(138,144,163,.15); color: var(--dim); }
-  .open { color: var(--gold); }
-  .dim { color: var(--dim); }
-  .evidence { font-size: .9rem; color: var(--dim); margin-top: 12px; }
-  .evidence b { color: var(--ok); }
-  img { max-width: 100%; border-radius: 10px; border: 1px solid var(--edge); display: block; }
-  figcaption { font-size: .85rem; color: var(--dim); margin-top: 8px; }
-  ul { margin: 8px 0; padding-left: 20px; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Avenir Next",Avenir,"Segoe UI",sans-serif;padding:32px 16px}
+  .deck{max-width:880px;margin:0 auto;display:grid;gap:28px}
+  .slide{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 32px}
+  .slide h2{margin:0 0 6px;font-size:1.05rem;letter-spacing:.14em;text-transform:uppercase;color:var(--neon)}
+  .slide h3{margin:18px 0 6px;font-size:1rem;color:var(--gold)}
+  .kicker{color:var(--dim);font-size:.85rem;margin:0 0 14px}
+  .cover{text-align:center;padding:48px 32px;background:linear-gradient(160deg,#131829 60%,#1a1230)}
+  .cover h1{margin:0;font-size:2.6rem;letter-spacing:.06em}
+  .cover h1 span{color:var(--pink)}
+  .cover p.tag{color:var(--neon);font-size:1.15rem;margin:12px auto 0;max-width:600px}
+  .cover p.meta{color:var(--dim);margin-top:18px;font-size:.9rem}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.92rem}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{color:var(--neon);font-weight:600;background:#0f1424}
+  .pill{display:inline-block;border-radius:20px;padding:1px 10px;font-size:.78rem;font-weight:600}
+  .p-ok{background:#123324;color:var(--ok)} .p-warn{background:#332a12;color:var(--warn)}
+  .p-bad{background:#331414;color:var(--bad)} .p-dim{background:#1c2338;color:var(--dim)}
+  ul{margin:8px 0;padding-left:20px} li{margin:4px 0}
+  .fact{border-left:3px solid var(--pink);padding:6px 14px;margin:12px 0;background:#171226;border-radius:0 8px 8px 0}
+  .quote{border-left:3px solid var(--neon);padding:6px 14px;margin:12px 0;color:var(--ink);font-style:italic;background:#101a26;border-radius:0 8px 8px 0}
+  img{max-width:100%;border-radius:10px;border:1px solid var(--line)}
+  .stamp{text-align:center;color:var(--dim);font-size:.85rem;padding:8px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:640px){.cols{grid-template-columns:1fr}}
+  .tbd{color:var(--warn);font-size:.88rem}
+  .small{font-size:.88rem;color:var(--dim)}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="deck">
 
-<header>
-  <h1>Yokai Arena <span class="dim">(working name)</span></h1>
-  <div class="stamp">rendered from shortGDD.md · v2 · 2026-08-14 · Creator Success proposal in progress — not yet submission-ready</div>
-  <div class="stagebar">
-    <span class="done">✓ stage 1 · find the fun — closed 2026-08-14</span>
-    <span class="now">▶ stage 2 · pitch — §3 loop table + §4 retention in interview</span>
-    <span>stage 3 · ten-pager</span>
+  <div class="slide cover">
+    <h1>YOKAI <span>DANMAKU</span></h1>
+    <p class="tag">A shared bullet-hell arena in haunted neo-Tokyo: every avatar survives the same yokai's pattern together, and timed deflects are the only way to banish it.</p>
+    <p class="meta">Creator Success proposal · stage 2 (pitch) · Pravus, solo, ~20h/week · requested round: v1<br>
+    Status: playable core-loop greybox in SDK7 — deflect 92% intended-hit, 150 projectiles @ 112 fps, anti-camping machine-verified · <span class="tbd">TBD: public link before submission</span></p>
   </div>
-</header>
 
-<h2>§1 · The Hook</h2>
-<p class="hook">It's like NieR: Automata's bullet hell, but the arena is shared — you and every other avatar in the plaza survive the same pattern together.</p>
+  <div class="slide">
+    <h2>1 · The Hook</h2>
+    <p>It's like <strong>NieR: Automata's bullet hell</strong>, but the arena is <strong>shared</strong> — you and every other avatar in the plaza survive the same pattern together.</p>
+  </div>
 
-<h2>§2 · First Session — as "you"</h2>
-<div class="panel">
-  <p>You spawn on a neon-lit walkway ringing a sunken arena. Below, glowing orbs bloom outward in slow spirals, and a handful of avatars weave between them. A pulsing ring on the floor marks the drop-in point. <span class="dim">[HYPOTHESIS → H1-04]</span></p>
-  <p>You drop in as a new wave starts — wide, slow arcs. You sidestep the first one; a low chime marks the near miss. Then an orb flashes blue as it closes on you — you press, and it ricochets back through the pattern, punching a hole the avatar beside you dives through.</p>
-  <p>Wave by wave the pattern tightens. You survive your first full round of three waves; the arena rim lights up with the next round's name and a preview of its pattern — visibly denser.</p>
-  <p class="open">The last thing you see before leaving: [OPEN — the Day-2 reason is designed in §4 at stage 2, then staged back into this beat.]</p>
-</div>
+  <div class="slide">
+    <h2>2 · First Session</h2>
+    <p>You spawn on a neon walkway ringing a sunken arena — below, glowing orbs bloom in slow spirals (the haunting never sleeps, even over an empty pit). You drop in as a wave starts; sidestep, near-miss chime. An orb flashes blue — you press, and it ricochets back, punching a hole the avatar beside you dives through. Every deflect chips the yokai's bar; three waves in it shatters and the rim previews the next round — visibly denser.</p>
+    <p class="quote">The last thing you see before leaving: this week's haunting board catching your name — your deepest round as a mark, the Sunday countdown ticking beside it. It won't survive tonight's crowd unless you come back.</p>
+  </div>
 
-<h2>§3 · Core Loop <span class="tag t-ok">verb proven</span> <span class="tag t-open">loop table [OPEN — stage 2]</span></h2>
-<div class="scroll"><table>
-  <tr><th>#</th><th>Verb</th><th>What the player does</th><th>Why do it again?</th></tr>
-  <tr><td>1</td><td>READ</td><td>Watch the incoming bullet pattern and find the gap</td><td>Every wave draws a new pattern</td></tr>
-  <tr><td>2</td><td>WEAVE</td><td>Move your avatar through the gap</td><td class="open">[OPEN — stage 2]</td></tr>
-  <tr><td>3</td><td>DEFLECT</td><td>A timed press ricochets the flashing bullet wherever your camera points — aim is part of the verb (decided 2026-08-13) — clearing a hole in the pattern <b>for everyone in the arena</b></td><td>Your deflect visibly helps the players around you</td></tr>
-  <tr><td>4</td><td>SURVIVE</td><td>Outlast the wave; the next one starts tighter</td><td class="open">[OPEN — stage 2]</td></tr>
-</table></div>
-<p class="dim">One loop takes · one session lasts · why the 10th repetition is still fun — all <span class="open">[OPEN — stage 2]</span>, in interview now.</p>
-<p class="evidence"><b>Why the first repetition feels good — measured, not hoped:</b> the verb held with no score, reward or goal attached — 3 voluntary greybox waves, quit by choice (H1-01 survived). Two load-bearing conditions are part of the verb: the deflect is <b>scarce</b> (1.5 s cooldown) and the telegraph is <b>honest</b> (exactly one bullet glows blue — the one E sends back). Deflect timing is fair: 12/13 intended deflects (92% vs ≥70% bar), landings predictable before the press (H1-02 validated). Genre density runs: 112 avg render FPS at 150 simultaneous projectiles, zero hiccups (H1-03 validated). Both mobile pending. Whether the verb pulls players who didn't invent it is H1-04 — deferred to v1's external testers.</p>
+  <div class="slide">
+    <h2>3 · Core Loop</h2>
+    <p class="kicker">One wave ≈ 40 s (measured) · one round ≈ 2–2.5 min · session = collective run to the wipe, target median 8–15 min</p>
+    <table>
+      <tr><th>Verb</th><th>What you do</th><th>Why again</th></tr>
+      <tr><td><strong>READ</strong></td><td>Watch the pattern, find the gap</td><td>Every wave draws a new pattern</td></tr>
+      <tr><td><strong>WEAVE</strong></td><td>Thread your avatar through</td><td>Gaps sweep from a random start every volley — no fixed spot survives (measured)</td></tr>
+      <tr><td><strong>DEFLECT</strong></td><td>Timed, camera-aimed ricochet</td><td>Punches a hole for everyone; the only damage to the yokai</td></tr>
+      <tr><td><strong>SURVIVE</strong></td><td>Outlast the wave</td><td>Empty the bar → banish → a denser yokai</td></tr>
+    </table>
+    <div class="fact"><strong>Anti-camping is law, not a hazard:</strong> H2-01 proved the bar makes camping correct wherever a pattern permits it; the redesigned pattern law (undeflectable wall volleys, sweeping twin entrances) refuses it — zero majority-camped rounds banished, machine-logged. Standing law: <em>every yokai's every wave must carry an anti-camping element.</em></div>
+    <p class="small">10th repetition: other players (crowd = the variety — unmeasured, v1), rising difficulty, skill expression. Solo floor held: 15 voluntary waves / 4 runs, quit by choice. Knockout = spectate one wave from the walkway; full wipe resets the haunting to round 1.</p>
+  </div>
 
-<h2>§7 · World, Look &amp; Story</h2>
-<div class="panel">
-  <p>Neo-Tokyo's grid is haunted by digital yokai, and each round the arena summons one — its bullet pattern is that spirit's fury given light. You survive the haunting together with everyone in the pit; deflecting a bullet throws the yokai's own fury back at it.</p>
-  <p class="dim">Visual direction: Ghostwire: Tokyo (rain-slick neon shrine streets) · NieR: Automata's glowing-orb bullet language · Akira's Neo-Tokyo night palette. Stylized PBR, baked lighting. <span class="dim">[agent-decided — owner named "cyberpunk yokai"; references chosen to match]</span></p>
-  <figure style="margin:16px 0 0">
-    <img src="01-find-the-fun/H1-01-greybox.png" alt="H1-01 greybox — sunken arena, walkway ring, one pattern mid-bloom">
-    <figcaption>H1-01 greybox (desktop Explorer, 2026-08-13): sunken arena, walkway ring, one spiral pattern mid-bloom. Primitives only — the yokai art direction is not yet built.</figcaption>
-  </figure>
-</div>
+  <div class="slide">
+    <h2>4 · Why Players Come Back</h2>
+    <p class="quote">"Last night's deepest round — <em>we got to round 7</em> — is on this week's haunting board with my name on it, and it will not survive tonight's crowd unless I come defend it."</p>
+    <ul>
+      <li><strong>Hook 1 — Weekly haunting board.</strong> Brackets of 20, remainder merges (below 40 weekly placers: one board of everyone — sized by arithmetic to DCL-real traffic). Median player has ~7 beatable marks within 2 rounds. Known fact: #1 is usually a runaway — the drama is mid-table defense, never "beat the #1". Resets Sunday 00:00 UTC.</li>
+      <li><strong>Hook 2 — The Great Haunting.</strong> Friday 20:00 UTC, one automated mega-yokai template with its own dedicated model. The calendar is the platform's only notification system.</li>
+      <li><strong>Hook 3 — The yokai scrapbook.</strong> Silhouettes fill permanently when you stand through a banishment. Pacing measured: no wall (last page ~3 sessions) — and honestly a <em>fast book</em> at v1 scale; its long pull is the mega page + content drops.</li>
+    </ul>
+    <p><strong>Day 7:</strong> league tier over your head, lifetime best, 1–2 Great Haunting charms on your avatar, scrapbook filling. <strong>Long-term:</strong> the Exorcist wearable — 4 Great Haunting banishments, calendar-gated one month, charm-visible during the climb (mint at v2; charms ship in v1).</p>
+  </div>
 
-<h2>§8 · Comparables</h2>
-<div class="scroll"><table>
-  <tr><th></th><th>A — <span class="open">TBD: owner to name a second comparable before submission</span></th><th>B — NieR: Automata</th></tr>
-  <tr><td>What worked</td><td></td><td>3D bullet-hell patterns — slow, fat, glowing orbs readable in 3D space — fused with a Japanese sci-fi/cyberpunk mood.</td></tr>
-  <tr><td>What didn't</td><td></td><td>Combat depth and camera precision far beyond a small team's scope; not what made the patterns memorable.</td></tr>
-  <tr><td>What we do differently</td><td></td><td>Keep NieR's bullet language, strip its combat: no shooting, no combos — one shared arena, one timed aimed deflect that visibly helps everyone. Short sessions in a social world, not a 30-hour solo campaign.</td></tr>
-</table></div>
+  <div class="slide">
+    <h2>5 · Social by Design</h2>
+    <div class="cols">
+      <div><h3>Better with others</h3><p class="small">Solo, your knockout is the run's death; with others the run survives your mistakes. Deflects stack — deep rounds are crowd-gated. Every deflect is visible help in the pattern itself.</p></div>
+      <div><h3>Quiet hour</h3><p class="small">The haunting runs over an empty pit; the rim shows last night's names and the Friday countdown. Solo floor is measured fun. Any second player who drops in is instantly in your run — the shared arena is the matchmaking.</p></div>
+      <div><h3>Bystander</h3><p class="small">The whole loop is world-space. Five seconds of watching teaches both verbs; knocked-out players are a manufactured audience, one wave from playing again. Bullets never reach the walkway; the wall volley ejects AFK bodies.</p></div>
+      <div><h3>The clip</h3><p class="small">The last-one-standing banish: walkway full of invested spectators, one player lands the final deflect, the yokai shatters skyward over live action (no-pause law stands). One shared spectacle in v1.</p></div>
+    </div>
+  </div>
 
-<h2>Open at stage 2</h2>
-<div class="panel">
-  <ul>
-    <li><b>§3</b> loop table — cycle length, session length, 10th repetition <span class="dim">(in interview now; parked candidates: difficulty ramp, boss life bar, anti-camping)</span></li>
-    <li><b>§4</b> Why Players Come Back — Day-2 sentence, Day-7 state, 2+ return hooks, long-term goal</li>
-    <li><b>§5</b> Social by Design · <b>§11</b> Team · <b>§9</b> plan skeleton · <b>§0</b> TL;DR</li>
-    <li class="dim">§6 Mobile, §10 Success Criteria, §12 Deliverables — stage 3</li>
-  </ul>
-</div>
+  <div class="slide">
+    <h2>7 · World &amp; Look</h2>
+    <p>Neo-Tokyo's grid is haunted by digital yokai; each round's bullet pattern is that spirit's fury given light. Ghostwire: Tokyo × NieR's glowing-orb bullet language × Akira's night palette — stylized PBR, baked lighting.</p>
+    <img src="01-find-the-fun/H1-01-greybox.png" alt="H1-01 greybox — sunken arena, walkway ring, spiral pattern mid-bloom">
+    <p class="small">H1-01 greybox (desktop Explorer, 2026-08-13) — primitives only; art direction not yet built.</p>
+  </div>
 
-<h2>Appendix A · Hypothesis Log</h2>
-<div class="scroll"><table>
-  <tr><th>ID</th><th>IF / THEN</th><th>Source</th><th>Cheapest killing test</th><th>Status</th><th>Verdict / date</th><th>Tested on</th></tr>
-  <tr><td>H1-01</td><td>IF the core verb is weave-through-a-bullet-pattern plus a timed deflect, THEN the owner voluntarily replays ≥3 consecutive greybox waves with no score, reward or goal</td><td>§3</td><td>Desktop greybox, owner self-test</td><td><span class="tag t-ok">survived</span></td><td>kill-check held: 3 voluntary waves, quit by choice · 2026-08-13</td><td>desktop</td></tr>
-  <tr><td>H1-02</td><td>IF the deflect window is ≥0.4 s and bullets telegraph clearly, THEN the owner lands ≥7 of 10 intended deflects</td><td>§3</td><td>Same greybox, owner self-test (mobile-sensitive)</td><td><span class="tag t-ok">validated</span></td><td>12/13 (92%), aimed verb · 2026-08-13</td><td>desktop — <i>mobile pending</i></td></tr>
-  <tr><td>H1-03</td><td>IF a wave renders ~150 simultaneous glowing projectiles, THEN the scene holds ≥60 fps on recommended desktop</td><td>§3</td><td>Instrumented greybox, agent-measured (mobile-sensitive)</td><td><span class="tag t-ok">validated</span></td><td>112 avg render FPS, 0 hiccups · 2026-08-13</td><td>desktop — <i>mobile pending</i></td></tr>
-  <tr><td>H1-04</td><td>IF the spawn frames the arena mid-pattern below the walkway, THEN 4 of 5 first-time testers start dodging within 5 s untold</td><td>§2</td><td>H1-01 greybox + 3–5 first-time testers (fresh eyes)</td><td><span class="tag t-def">deferred</span></td><td>deferred at stage-1 close — v1 brings external testers · 2026-08-14</td><td>—</td></tr>
-</table></div>
+  <div class="slide">
+    <h2>8 · Comparables</h2>
+    <table>
+      <tr><th></th><th>Fall Guys</th><th>NieR: Automata</th></tr>
+      <tr><td><strong>Worked</strong></td><td>Mass shared arena, readable by watching; knockouts become an audience</td><td>Readable 3D bullet patterns + Japanese cyberpunk mood</td></tr>
+      <tr><td><strong>Didn't</strong></td><td>Elimination is terminal — the crowd drains</td><td>Combat depth beyond a small team's scope</td></tr>
+      <tr><td><strong>We differ</strong></td><td>Knockout lasts one wave, never the run; one persistent world, not lobbies</td><td>Bullet language kept, combat stripped: one deflect, shared survival, short sessions</td></tr>
+    </table>
+  </div>
 
+  <div class="slide">
+    <h2>9 · Six Weeks · ~120 h</h2>
+    <p class="small">Systems ~77 h (sync 30 · retention 22 · arena art 15 · FTUE/sound 10) → yokai budget 20–25 h → <strong>3–4 regular yokai (2 tiers) + 1 mega with its own model</strong>; week 1 times the first unit (H2-07) and decides the 3-vs-4 fork.</p>
+    <table>
+      <tr><th>Wk</th><th>Playable</th></tr>
+      <tr><td>1</td><td>Greybox → production scene; yokai #1 timed; sync spike (shared seed, events-only)</td></tr>
+      <tr><td>2</td><td><strong>Milestone:</strong> full loop multiplayer — pattern, bar, deflects, knockouts, wipe</td></tr>
+      <tr><td>3</td><td>League board + Sunday reset; scrapbook; remaining yokai</td></tr>
+      <tr><td>4</td><td><strong>Milestone:</strong> Great Haunting + mega model; charms; art pass; sound; <em>mobile playtest</em></td></tr>
+      <tr><td>5–6</td><td>Live in the World; funnel instrumented; fix pass; public repo</td></tr>
+    </table>
+    <p><strong>Cut (exactly 3):</strong> player-as-boss mode · the mintable Exorcist wearable (charms + climb ship; mint at v2) · hard-tier signature patterns.<br>
+    <strong>Top risk:</strong> shared-pattern sync. Plan A: deterministic seed + sparse events · B: grace-window holes · C: shared bar, per-client phase — the shippable floor.<br>
+    <strong>Live-ops:</strong> both weekly events automated — ≤1 person-day/week.</p>
+  </div>
+
+  <div class="slide">
+    <h2>11 · Team</h2>
+    <p>Pravus — everything (design, SDK7/TS, 3D &amp; art) · ~20h/week · strongest evidence: this repo's working greybox. <span class="tbd">TBD: past-work links.</span> Named gap: 3D/art at roster scale — plan: owner-built stylized low-poly + open/CC environment assets.</p>
+  </div>
+
+  <div class="slide">
+    <h2>Appendix · Hypothesis Log</h2>
+    <table>
+      <tr><th>ID</th><th>Claim</th><th>Status</th></tr>
+      <tr><td>H2-04</td><td>Board placers return on Day 2 (paper: K=20 + merge settled)</td><td><span class="pill p-ok">validated · paper</span> <span class="pill p-dim">behaviour → v1</span></td></tr>
+      <tr><td>H2-06</td><td>Scrapbook pulls returns (paper: no wall; fast book noted)</td><td><span class="pill p-ok">validated · paper</span> <span class="pill p-dim">behaviour → v1</span></td></tr>
+      <tr><td>H1-01</td><td>The verb is fun with nothing attached</td><td><span class="pill p-ok">survived</span></td></tr>
+      <tr><td>H1-02</td><td>Deflect timing is fair (92%)</td><td><span class="pill p-ok">validated</span> <span class="pill p-warn">mobile pending</span></td></tr>
+      <tr><td>H1-03</td><td>150 projectiles ≥60 fps (112 avg)</td><td><span class="pill p-ok">validated</span> <span class="pill p-warn">mobile pending</span></td></tr>
+      <tr><td>H2-01</td><td>Life bar preserves the weave</td><td><span class="pill p-bad">failed</span> → led to the pattern law</td></tr>
+      <tr><td>H2-02</td><td>10th wave still fun (solo floor)</td><td><span class="pill p-ok">survived</span> <span class="pill p-dim">crowd → v1</span></td></tr>
+      <tr><td>H2-03</td><td>Pattern law refuses camping</td><td><span class="pill p-ok">validated</span></td></tr>
+      <tr><td>H2-07</td><td>One yokai ≤6 h to build</td><td><span class="pill p-dim">parked → v1 week 1</span></td></tr>
+      <tr><td>H1-04</td><td>Fresh eyes dodge within 5 s</td><td><span class="pill p-dim">deferred → v1 testers</span></td></tr>
+      <tr><td>H2-05</td><td>Friday concurrency spikes</td><td><span class="pill p-dim">parked → v1 live</span></td></tr>
+    </table>
+    <p class="small">Full IF/THEN rows, criteria and verdict trails: shortGDD.md Appendix A + design/02-core-loop/. Open at stage 3: §6 mobile, §10 success criteria, §12 deliverables.</p>
+  </div>
+
+  <div class="stamp">rendered from shortGDD.md · v2 · 2026-08-19 · stage 2 (pitch) closed — .md is the source of truth</div>
 </div>
 </body>
 </html>

@@ -1,5 +1,7 @@
 # Decision history — append-only, newest first
 
+- 2026-08-19 · The experience is named **Yokai Danmaku** · owner's call at §0 — the genre term (danmaku = bullet hell) carried in the name.
+
 - 2026-08-18 · §9 skeleton set: week table priced to the slice; three cuts (player-as-boss mode · the mintable Exorcist wearable — charms + climb ship, mint moves to v2 · hard-tier signature pattern elements); top risk named as shared-pattern multiplayer sync, plans A (deterministic seed + sparse events) / B (grace-window holes) / C (shared bar, per-client phase — the shippable floor) · owner yes 2026-08-18; week-1 sync spike decides the plan.
 
 - 2026-08-18 · Art plan is (a): owner-built stylized low-poly yokai (emissive, §7 direction) + open/CC environment assets; the Great Haunting mega-yokai gets its OWN dedicated model, never a re-dress · owner call at §9 — "the weekly event must look like an event"; prices the v1 slice at 3–4 regular yokai (2 tiers) + 1 mega against the ~20–25 h yokai budget, self-correcting on H2-07's week-1 measured unit cost.
