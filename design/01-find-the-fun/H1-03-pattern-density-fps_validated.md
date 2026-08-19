@@ -5,7 +5,7 @@
 - **Cheapest killing test:** instrumented desktop greybox — spawn N projectiles on a curve, log fps; agent-measurable, no playtest needed
 - **Key metric:** fps at 150 projectiles; below 60 on recommended desktop = failed (then find the max N that holds)
 - **Mobile-sensitive:** yes
-- **Tested on:** desktop
+- **Tested on:** desktop (criterion measured) · mobile check deferred at owner request (informal gameplay-density observation only)
 - **Parked:** 2026-08-13
 
 ## Brief
@@ -44,3 +44,5 @@ Rider: scene-tick rate at 150 bullets ≈ 35.7/40 target — same as at ~35 bull
 Momentary minima dipped to 48–56 within the samples with zero hiccup frames — honest but comfortably inside the criterion, which was pre-registered on the average. Headroom is large enough that pattern design is not FPS-constrained at genre density on desktop. `Mobile-sensitive: yes`, desktop only → *mobile pending*; the QR mobile check re-tests by appending to this file with `DENSITY_TEST = 150` re-enabled.
 
 **mobile rung, pass 1: owner QR self-test · 2026-08-19 · no measurement.** Owner ran the scene on their phone during the H1-02 mobile pass; no FPS number was read (the broken mobile HUD took the session). Verdict unchanged; *mobile pending* stays true. Next mobile pass re-enables `DENSITY_TEST = 150` and reads min FPS against the program's 30 fps minimum-hardware bar.
+
+**mobile rung closed: deferred at owner request · 2026-08-19.** During the H1-02 mobile retest (multiple full waves on the owner's phone, fixed HUD, ~35–70 live bullets with walls) the owner reported **"FPS in mobile seems OK"** — an informal glance at *gameplay* density, recorded as such. The pre-registered 150-projectile read (`DENSITY_TEST = 150`, min FPS vs the program's 30 fps minimum-hardware bar) was **not performed**: the owner closed the session before the density flip. Under the contract an unmeasured criterion cannot close `validated` on this rung, so the mobile check is marked **deferred** (skipped experiments never vanish) rather than left *pending*. Desktop `validated` stands untouched. The check remains minutes of work whenever wanted: flip `DENSITY_TEST = 150`, glance at the phone, read the HUD `fps (min …)` line — note that line is scene-tick rate, and that bullets now carry `CL_POINTER` colliders for tap input (the real shipping config), so the mobile number would be the honest one to design against.

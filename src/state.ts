@@ -34,6 +34,7 @@ export const stats = {
   bannerLeft: 0,
 
   deflectCooldown: 0, // seconds until E is live again; >0 greys the HUD line
+  deflectCooldownMax: 1.5, // set from DEFLECT_COOLDOWN in game.ts — drives the recharge bar
   deflectAttempts: 0, // every E press while off cooldown
   deflectHits: 0, // presses that connected with a telegraphing bullet
   yokaiHits: 0, // deflected bullets that flew back into the emitter (bar damage)

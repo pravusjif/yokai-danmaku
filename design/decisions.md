@@ -1,5 +1,9 @@
 # Decision history — append-only, newest first
 
+- 2026-08-19 · **Mobile deflect is a designed variant, not a port** (mobile-only, desktop verb frozen): E/F on-screen buttons fire the deflect; a landed deflect snaps to the yokai core when the camera is within 30° (assist eased from 60° by owner call mid-session); whiff presses spend no cooldown — H1-01's anti-spam whiff cost stays law on desktop · owner calls during H1-02's mobile rung — raw camera-aim + press was "unplayable" on touch. Tap-the-flashing-bullet built but dead on the mobile client (suspected client bug — works on desktop, report upstream).
+
+- 2026-08-19 · The deflect cooldown gets a persistent bottom-center recharge bar — grey and filling while recharging, solid blue "DEFLECT READY" when live, echoing the blue telegraph · owner call on device during the H1-02 mobile rung — the corner counter line was not glanceable while dodging.
+
 - 2026-08-19 · The experience is named **Yokai Danmaku** · owner's call at §0 — the genre term (danmaku = bullet hell) carried in the name.
 
 - 2026-08-18 · §9 skeleton set: week table priced to the slice; three cuts (player-as-boss mode · the mintable Exorcist wearable — charms + climb ship, mint moves to v2 · hard-tier signature pattern elements); top risk named as shared-pattern multiplayer sync, plans A (deterministic seed + sparse events) / B (grace-window holes) / C (shared bar, per-client phase — the shippable floor) · owner yes 2026-08-18; week-1 sync spike decides the plan.

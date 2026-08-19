@@ -1,6 +1,7 @@
 import ReactEcs, { Label, ReactEcsRenderer, UiEntity } from '@dcl/sdk/react-ecs'
 import { Color4 } from '@dcl/sdk/math'
 import { copyToClipboard } from '~system/RestrictedActions'
+import { getPlatform } from '@dcl/sdk/platform'
 import { stats } from './state'
 
 // The HUD is the instrument, not decoration: round/wave/HP (H2-01 build),
@@ -20,7 +21,8 @@ function copyStats() {
     `deflects=${stats.deflectHits}/${stats.deflectAttempts} yokaiHits=${stats.yokaiHits} timesHit=${stats.timesHit} ` +
     `wallHits=${stats.wallHits} spiralHits=${stats.spiralHits} volleys=${stats.volleys} ` +
     `camp=${stats.campPct}% lastWaveCamp=${stats.lastWaveCampPct}% ` +
-    `wavesCompleted=${stats.wavesCompleted} bullets=${stats.bullets} peak=${stats.peakBullets} fps=${stats.fps} minFps=${stats.minFps}`
+    `wavesCompleted=${stats.wavesCompleted} bullets=${stats.bullets} peak=${stats.peakBullets} fps=${stats.fps} minFps=${stats.minFps} ` +
+    `platform=${getPlatform() ?? '?'}`
   copiedFlashUntil = Date.now() + 1500
   copyToClipboard({ text }).catch(() => {
     console.log('copyToClipboard failed; data line: ' + text)
@@ -53,8 +55,11 @@ function Hud() {
       {/* counters — click to copy all values to the clipboard */}
       <UiEntity
         uiTransform={{
+          // right-anchored: the mobile virtual canvas is 1600x720 (16:9 sizes
+          // are overridden there), so a left:1400 panel overflows it — H1-02
+          // mobile rung, 2026-08-19
           positionType: 'absolute',
-          position: { top: 110, left: 1400 },
+          position: { top: 110, right: 20 },
           width: 460,
           flexDirection: 'column',
           alignItems: 'flex-end',
@@ -136,6 +141,48 @@ function Hud() {
         </UiEntity>
       )}
 
+      {/* deflect recharge bar — the cooldown must be glanceable while dodging
+          (owner, mobile rung 2026-08-19). Grey and filling = recharging, focus
+          on dodging; solid blue = deflect ready, a bullet can flash blue. */}
+      {!stats.knockedOut && (
+        <UiEntity
+          uiTransform={{
+            positionType: 'absolute',
+            position: { bottom: 70, left: 0 },
+            width: '100%',
+            justifyContent: 'center'
+          }}
+        >
+          <UiEntity
+            uiTransform={{ width: 420, height: 30, padding: 3, flexDirection: 'column' }}
+            uiBackground={{ color: Color4.create(0, 0, 0, 0.6) }}
+          >
+            <UiEntity
+              uiTransform={{
+                width: `${Math.round((1 - stats.deflectCooldown / stats.deflectCooldownMax) * 100)}%`,
+                height: '100%'
+              }}
+              uiBackground={{
+                color:
+                  stats.deflectCooldown > 0
+                    ? Color4.create(0.45, 0.45, 0.45, 0.9)
+                    : Color4.create(0.3, 0.7, 1, 0.95)
+              }}
+            />
+          </UiEntity>
+          <UiEntity
+            uiTransform={{ positionType: 'absolute', position: { top: 0, left: 0 }, width: '100%', height: 30, justifyContent: 'center' }}
+          >
+            <Label
+              value={stats.deflectCooldown > 0 ? 'RECHARGING' : 'DEFLECT READY'}
+              fontSize={20}
+              color={Color4.White()}
+              font="monospace"
+            />
+          </UiEntity>
+        </UiEntity>
+      )}
+
       {/* control reminder — matches the task text, no feel narration */}
       <UiEntity
         uiTransform={{
@@ -146,7 +193,7 @@ function Hud() {
         }}
       >
         <Label
-          value="WASD move · E deflect when a bullet flashes blue · empty the yokai's bar"
+          value="move · E/F or tap the blue bullet to deflect · aim with the camera · empty the yokai's bar"
           fontSize={20}
           color={Color4.create(0.8, 0.8, 0.8, 1)}
           font="monospace"

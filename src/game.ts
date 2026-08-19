@@ -3,15 +3,19 @@ import {
   Entity,
   Transform,
   MeshRenderer,
+  MeshCollider,
+  ColliderLayer,
   Material,
   VisibilityComponent,
   inputSystem,
   InputAction,
   PointerEventType,
+  pointerEventsSystem,
   Physics,
   KnockbackFalloff
 } from '@dcl/sdk/ecs'
 import { Vector3, Color4, Color3 } from '@dcl/sdk/math'
+import { isMobile } from '@dcl/sdk/platform'
 import { movePlayerTo } from '~system/RestrictedActions'
 import { stats } from './state'
 import { CENTER_X, CENTER_Z, ARENA_RADIUS, updateYokaiBar } from './arena'
@@ -42,6 +46,11 @@ const DEFLECT_COOLDOWN = 1.5
 // --- H2 round structure (new for H2-01/H2-02/H2-03) ---
 const BAR_HP = 18 // deflected bullets into the emitter to banish; sized for ~3 solo waves
 const HITS_PER_KNOCKOUT = 3 // owner decision 2026-08-15: one hit out was too punishing
+// Mobile aim assist (owner request mid-pass, 2026-08-19): on touch, a deflect
+// whose camera direction is within this cone of the yokai core snaps to the
+// core — aim stays an intent, precision is assisted. Desktop verb untouched.
+const MOBILE_ASSIST_CONE_DEG = 30 // eased from 60 at owner request (pass 3→4) — aim must be half as rough
+const MOBILE_ASSIST_COS = Math.cos((MOBILE_ASSIST_CONE_DEG * Math.PI) / 180)
 const RAMP_PER_ROUND = 0.18 // density factor per banished yokai — "the next one attacks denser"
 const RAMP_PER_WAVE = 0.06 // waves tighten within a round while the bar holds
 const MAX_DENSITY = 2.2 // cap ≈ 77 live bullets — H1-03 measured 112 fps at 150, safe
@@ -117,6 +126,9 @@ let sessionTime = 0
 let nextVolleyAt = VOLLEY_FIRST_AT
 let gapAzimuth = Math.random() * 360
 let emitPauseUntil = 0
+// tap-to-deflect needs the pit check outside gameSystem's frame locals
+// (H1-02 mobile rung, 2026-08-19)
+let playerInPit = false
 // camping meter internals
 let campSamples: { x: number; z: number }[] = []
 let campAccum = 0
@@ -169,6 +181,15 @@ function spawnBullet(angle: number, kind: BulletKind = 'spiral') {
     VisibilityComponent.create(entity, { visible: true })
     b = { entity, active: false, state: 'live', kind: 'spiral', dirX: 0, dirZ: 0, age: 0, speed: BULLET_SPEED, halfH: BULLET_SCALE / 2 }
     pool.push(b)
+    // Tap-to-deflect (H1-02 mobile rung, 2026-08-19): CL_POINTER only — no
+    // physics — and no hover feedback, so blue stays the one telegraph.
+    // Registered once per pooled entity; the closure's `b` is stable across reuse.
+    MeshCollider.setSphere(entity, ColliderLayer.CL_POINTER)
+    const tapped = b
+    pointerEventsSystem.onPointerDown(
+      { entity, opts: { button: InputAction.IA_POINTER, maxDistance: 14, showFeedback: false, showHighlight: false } },
+      () => onBulletTapped(tapped)
+    )
   }
   b.active = true
   b.age = 0
@@ -214,6 +235,11 @@ function spawnWallRing(gapCenterDeg: number) {
 function despawnBullet(b: Bullet) {
   b.active = false
   if (currentTarget === b) currentTarget = null
+  // pooled entities must never idle with the blue material: on reuse the
+  // repaint and the visibility flip travel as separate updates, and a client
+  // applying them out of order flashes a stale-blue bullet at spawn that
+  // answers no input (seen on mobile, H1-02 mobile rung 2026-08-19)
+  if (b.state === 'telegraph') setBulletState(b, 'live')
   VisibilityComponent.getMutable(b.entity).visible = false
 }
 
@@ -323,6 +349,7 @@ function knockout(fromX: number, fromZ: number) {
 export function setupGame() {
   stats.yokaiMaxHp = BAR_HP
   stats.yokaiHp = BAR_HP
+  stats.deflectCooldownMax = DEFLECT_COOLDOWN
   updateYokaiBar(1)
 }
 
@@ -429,6 +456,7 @@ export function gameSystem(dt: number) {
   // greybox pit edge is soft, and straddling it must not be a sanctuary (H2-03).
   const inPit = playerT !== null && playerT.position.y < 2.2 && playerR < ARENA_RADIUS
   const onFloor = playerT !== null && playerT.position.y < 2.2 && playerR < FLOOR_HIT_RADIUS
+  playerInPit = inPit
 
   if (iframe > 0) iframe -= dt
   if (knockbackCooldown > 0) knockbackCooldown -= dt
@@ -572,7 +600,12 @@ export function gameSystem(dt: number) {
   } else if (currentTarget && (!currentTarget.active || !currentTargetOnLane || currentTargetDist > TELEGRAPH_EXIT)) {
     currentTarget = null
   }
-  if (!currentTarget && stats.deflectCooldown <= 0 && !stats.knockedOut && inPit) currentTarget = nearest
+  // nearest can have despawned later in its own loop iteration (recorded as
+  // the candidate first, then hit the player) — a ghost target paints no blue
+  // and would count a false success on the next press
+  if (!currentTarget && stats.deflectCooldown <= 0 && !stats.knockedOut && inPit) {
+    currentTarget = nearest && nearest.active ? nearest : null
+  }
 
   for (const b of pool) {
     if (!b.active || b.state === 'deflected') continue
@@ -580,38 +613,82 @@ export function gameSystem(dt: number) {
     if (b.state !== should) setBulletState(b, should)
   }
 
-  // --- Deflect: E sends the blue bullet where the camera points (aimed —
-  // decision 2026-08-13). A knocked-out spectator has no E. ---
+  // --- Deflect: E or F (or tapping a bullet — onBulletTapped) sends the blue
+  // bullet where the camera points (aimed — decision 2026-08-13; F added as an
+  // alternate binding for the H1-02 mobile rung, 2026-08-19). A knocked-out
+  // spectator has no deflect. ---
   if (
-    inputSystem.isTriggered(InputAction.IA_PRIMARY, PointerEventType.PET_DOWN) &&
+    (inputSystem.isTriggered(InputAction.IA_PRIMARY, PointerEventType.PET_DOWN) ||
+      inputSystem.isTriggered(InputAction.IA_SECONDARY, PointerEventType.PET_DOWN)) &&
     stats.deflectCooldown <= 0 &&
     !stats.knockedOut &&
     inPit
   ) {
-    stats.deflectCooldown = DEFLECT_COOLDOWN
-    stats.deflectAttempts++
-    const target = currentTarget
-    if (target) {
-      stats.deflectHits++
-      const camT = Transform.getOrNull(engine.CameraEntity)
-      let dx = 0
-      let dz = 0
-      if (camT) {
-        const fwd = Vector3.rotate(Vector3.Forward(), camT.rotation)
-        dx = fwd.x
-        dz = fwd.z
-      }
-      let len = Math.sqrt(dx * dx + dz * dz)
-      if (len < 0.001) {
-        const t = Transform.get(target.entity)
-        dx = CENTER_X - t.position.x
-        dz = CENTER_Z - t.position.z
-        len = Math.sqrt(dx * dx + dz * dz) || 1
-      }
-      target.dirX = dx / len
-      target.dirZ = dz / len
-      setBulletState(target, 'deflected')
-      currentTarget = null
-    }
+    attemptDeflect(currentTarget)
   }
+}
+
+// One intended deflect attempt: spends the cooldown, counts the attempt, and —
+// only if it connected with THE blue bullet — sends it camera-forward. Shared
+// by the E/F press (attempted on whatever is blue) and the tap (attempted on
+// the bullet under the finger).
+function attemptDeflect(target: Bullet | null) {
+  stats.deflectAttempts++
+  const connected = target !== null && target === currentTarget && target.active
+  // Mobile rung (owner, 2026-08-19): on touch a whiff press spends no cooldown —
+  // only a landed deflect does. Desktop keeps the H1-01 anti-spam rule (a whiff
+  // costs the full cooldown; E-spam killed the weave in H1-01 pass 1). Whiffs
+  // still count as attempts on both platforms — the metric is unchanged.
+  if (connected || !isMobile()) stats.deflectCooldown = DEFLECT_COOLDOWN
+  if (connected && target) {
+    stats.deflectHits++
+    const camT = Transform.getOrNull(engine.CameraEntity)
+    let dx = 0
+    let dz = 0
+    if (camT) {
+      const fwd = Vector3.rotate(Vector3.Forward(), camT.rotation)
+      dx = fwd.x
+      dz = fwd.z
+    }
+    let len = Math.sqrt(dx * dx + dz * dz)
+    if (len < 0.001) {
+      const t = Transform.get(target.entity)
+      dx = CENTER_X - t.position.x
+      dz = CENTER_Z - t.position.z
+      len = Math.sqrt(dx * dx + dz * dz) || 1
+    }
+    dx /= len
+    dz /= len
+    // mobile-only assist: camera roughly at the core (MOBILE_ASSIST_CONE_DEG)
+    // → the shot goes to the core
+    if (isMobile()) {
+      const t = Transform.get(target.entity)
+      let cx = CENTER_X - t.position.x
+      let cz = CENTER_Z - t.position.z
+      const clen = Math.sqrt(cx * cx + cz * cz)
+      if (clen > 0.001) {
+        cx /= clen
+        cz /= clen
+        if (dx * cx + dz * cz > MOBILE_ASSIST_COS) {
+          dx = cx
+          dz = cz
+        }
+      }
+    }
+    target.dirX = dx
+    target.dirZ = dz
+    setBulletState(target, 'deflected')
+    currentTarget = null
+  }
+}
+
+// Tap-to-deflect (H1-02 mobile rung, 2026-08-19): a tap landing on a spiral
+// bullet is an intended attempt — success only on the blue one, so the tap
+// path keeps the desktop attempt/miss semantics. Taps during recharge do
+// nothing (H1-01 rule), walls never answer (H2-03 law), and a tap that hits
+// no bullet is invisible here (uncounted — pre-registered in the brief).
+function onBulletTapped(b: Bullet) {
+  if (!b.active || b.kind === 'wall' || b.state === 'deflected') return
+  if (stats.deflectCooldown > 0 || stats.knockedOut || !playerInPit) return
+  attemptDeflect(b)
 }
