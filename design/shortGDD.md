@@ -137,26 +137,22 @@ A Day-7 player has, by name: a **league rank tier** from Sunday's final standing
 
 ## 6. Mobile-First
 
-*Mobile is not a port target — it is the primary design target. Build for touch first, scale UI up to desktop.*
+This section was played before it was written: H1-02's touch rung ran four iterated passes on the owner's phone (Creator Hub QR, 2026-08-19), and every claim below comes from that session or names what it left open. The mobile deflect is a **designed variant, not a port** (decided 2026-08-19): raw desktop controls were unplayable on touch, so the verb carries a per-platform spec.
 
-**Every core-loop verb on touch.** Copy your verbs from Section 3:
+**Every core-loop verb on touch.**
 
 | Core-loop verb | How it works with touch controls |
 |---|---|
-| | |
-| | |
+| READ | No input needed — the genre's bullet language is already touch-native: fat, slow, glowing orbs, and exactly one flashing blue (the deflect target). Cooldown state lives in a bottom-center recharge bar (grey and filling while recharging, solid blue "DEFLECT READY" when live — same blue as the telegraph), added after the on-device pass showed a corner counter is not glanceable while dodging (decided 2026-08-19). |
+| WEAVE | The platform's standard joystick + camera drag, unmodified — the owner played full waves on device with it across all four passes. Timing over precision: gaps are avatar-sized and sweep predictably; nothing in the pattern needs pixel accuracy. |
+| DEFLECT | E/F on-screen buttons fire it — large tap targets, one primary action. Aim is assisted, not precise: a landed deflect snaps to the yokai core when the camera points within 30° of it, so aim stays an intent while precision is forgiven. A whiff press spends no cooldown on mobile; desktop keeps the full 1.5 s whiff cost (free spam killed the weave in H1-01), so scarcity is enforced per platform. The kill-check held on device — touch deflect reads as timing, not luck (H1-02 mobile rung survived, owner self-test, 2026-08-19) — but the ≥7/10 ratio was never counted on the phone. `[HYPOTHESIS → H1-02]` |
+| SURVIVE | No input — the outcome of the other three. All survival state is world-space and glance-readable at phone size: the yokai's bar over the pit, knockout throws you visibly to the walkway, the next wave drops you back in. |
 
-**UI plan.** *One or two sentences: how is your UI designed for a small screen first?*
+**UI plan.** The game happens in world space — arena, life bar, rim board and countdowns are all in-scene — so the only screen UI during play is the bottom-center deflect recharge bar, placed where a phone-holding thumb and a dodging eye both reach. Screen elements anchor to edges, never to absolute coordinates: the mobile client renders the UI canvas at a different virtual resolution than desktop (measured in the H1-02 rung: 1600×720 on SDK 7.26+ vs the 16:9 desktop canvas), which is exactly how the greybox HUD broke on device and was fixed (right-anchoring, 2026-08-19).
 
-[Your answer]
+**Performance.** The single biggest risk is **projectile density on the mobile renderer** — the genre needs a wall of moving glowing bullets, and every one is an animated emissive entity. Desktop has headroom to spare: 112 avg render FPS at 150 simultaneous projectiles, zero hiccup frames (H1-03 validated 2026-08-13). The same read on the phone was **deferred at owner request** (2026-08-19) with one informal data point — normal gameplay density (~35–70 bullets) ran fine on the owner's phone — so the mobile bullet budget is still a claim, not a fact. `[HYPOTHESIS → H1-03]` Plan: the `DENSITY_TEST = 150` knob is still in the code and the on-device read costs minutes, now under the real shipping config (bullets carry tap colliders); it runs no later than week 4's mobile playtest (§9). If 150 fails on device, we bisect to the max N that holds 30 fps and author patterns under a per-platform density budget — patterns are configs, so a lower mobile ceiling is a parameter change, not a redesign. `TBD: the program's 30 fps minimum-hardware bar with up to 20 avatars in the pit — no cheaper honest rung exists for avatar crowd cost; measured at week 4's mobile playtest.`
 
-**Performance.** *Target: 60fps on recommended desktop hardware / 30fps on minimum hardware, with up to 20 players in the scene. What is your single biggest performance risk (asset weight? physics? effects?) and your plan for it?*
-
-[Your answer]
-
-**Desktop-only dependencies.** *Do you rely on any feature not yet available on mobile? (Check the Desktop vs Mobile Feature Gap tracker.) If yes: how is the design built so the feature can switch on later without a redesign?*
-
-[Your answer]
+**Desktop-only dependencies.** One, found by playing rather than by audit, and the design already survives it: **tap-the-flashing-bullet** (entity pointer events from direct touch) is built and works on desktop but is dead on the mobile client — suspected client bug, worth an upstream report (H1-02 pass 2, 2026-08-19). It was meant as the most direct touch input; the shipping mobile input is the E/F on-screen buttons, and the tap path stays in the build so it switches on with a client fix — zero redesign. Nothing else leans desktop-only: no hover states, no keyboard combos, no mouse-precision aiming (the 30° core snap replaced it). `TBD: re-check the Desktop vs Mobile Feature Gap tracker before submission — this section's gap list is empirical, not exhaustive.`
 
 ---
 
@@ -216,25 +212,31 @@ Program milestones are fixed: **Week 2** — functional test version of the core
 
 ## 10. Success Criteria — what you will measure
 
-*Progression to the v2 round depends on retention evidence. Decide now what evidence you expect to see.*
+- **The 2–3 numbers we will watch from Week 1 of being live** (decided 2026-08-19 — each one settles a parked hypothesis, none is a vanity metric):
 
-- **The 2–3 numbers you will watch from Week 1 of being live** *(examples: % of new players who complete the first goal; median session length; % of sessions where the player interacts with another player; % returning within 7 days)*
+  1. **D2 return rate, split board-placers vs non-placers.** This is H2-04's behaviour half: placers must return at a visibly higher rate, or the Day-2 anchor (§4.1) is theatre. The split is the claim — a good raw D2 with no split proves nothing about the board.
+  2. **Median collective-run length** against the 8–15 min target — closes §3's standing `TBD:` with live data (the greybox measured a wave, never a crowd's run).
+  3. **% of sessions that overlap ≥1 other player in the pit** — the crowd half of H2-02 and the precondition every §5 claim rests on. If this sits near zero, the social design is untested by reality whatever the other numbers say, and Friday's concentration mechanic becomes the priority lever.
 
-  [Your numbers]
+  Tracked but not headlined: Friday 20:00 UTC concurrency vs the weekday baseline (H2-05) — meaningful only from week 2, once a Great Haunting has had its full week of rim warning.
 
-- **Your first-session funnel** *(the steps you will instrument: spawn → first interaction → first reward → first goal complete → session end). If you can't name the steps, you can't fix the drop-offs.*
+- **First-session funnel** (decided 2026-08-19 — every step is an event the loop already emits; instrumentation is timestamped logging, no new systems):
 
-  [Your funnel]
+  **Spawn** (walkway) → **drop into the pit** (first interaction — time-to-drop is logged, giving H1-04's "starts playing within 5 s" claim real numbers from real strangers) → **first landed deflect** (first reward: your hole in the pattern, the bar chips) → **first banish stood through** (first goal complete — already instrumented by design: it *is* the first scrapbook reveal) → **first mark on the board** (the bridge to the Day-2 anchor) → **session end**.
 
-- **Your pivot threshold.** *What result after 2 weeks live would make you change the design? What result would make you say "this hypothesis failed"? Agreeing on this now makes iteration decisions easy and fair.*
+  Drop-offs map to fixes: losing players at spawn→drop is FTUE/spawn framing (§2); at drop→deflect it is the touch verb or the telegraph (§6); at banish→mark it means runs wipe before marks land (ramp tuning, §3).
 
-  [Your answer]
+- **Pivot thresholds** (decided 2026-08-19 — pre-registered now so the week-3 call is mechanical; at v1 traffic the samples are small, so tripwires read direction and magnitude, not p-values):
+
+  1. **H2-04 fails** if board-placers' D2 return is not at least **1.5× non-placers'** over the first two live weeks. Consequence: the board is not the Day-2 anchor — §4.1 is rewritten around the scrapbook/charm climb before any v2 ask.
+  2. **The touch verb needs surgery** if fewer than **half of first sessions that drop into the pit ever land a deflect** (mobile split watched separately — H1-02's open on-device ratio meeting reality). Consequence: telegraph/assist tuning takes priority over new yokai content.
+  3. **Run-length band:** a median collective run **under 5 min** means the ramp is too cruel (wipes eat sessions before marks land); **over 20 min** means it is too soft (marks too cheap to defend). Either side of the 8–15 target triggers ramp retuning, not new systems.
+
+  Standing rule: a tripwire firing means we *change the named thing* — it never licenses bolting on a new retention system (§9's standing non-goal).
 
 ---
 
 ## 11. Team
-
-*Hours per week matter more than credentials. Jam games, open call builds and mods all count as proof.*
 
 | Person (name/handle) | Role in this project | Hours/week | Links to past work |
 |---|---|---|---|
@@ -246,15 +248,16 @@ Program milestones are fixed: **Week 2** — functional test version of the core
 
 ## 12. Deliverables & Declaration
 
-**With the v1 round (6 weeks) we will deliver:** *(3–5 concrete bullets — things a player can do, not internal tasks)*
+**With the v1 round (6 weeks) we will deliver** (decided 2026-08-19 — priced against §9's slice, nothing here exceeds the plan):
 
--
--
--
+- **Fight in a live World:** drop into a persistent shared bullet-hell arena and banish escalating yokai with strangers — the full loop (weave, aimed deflect, shared life bar, knockout, wipe) running multiplayer, on desktop and mobile.
+- **Place and defend a mark** on the weekly haunting board — league brackets, Sunday 00:00 UTC reset, rim countdown.
+- **Fill a scrapbook** of the shipped roster — 3–4 regular yokai across 2 tiers plus the Great Haunting mega-yokai, silhouettes revealing permanently.
+- **Attend Friday's Great Haunting** and hang visible charms on their avatar — the 4/4 Exorcist climb underway (the mintable wearable itself is a declared v2 cut, §9).
 
-**Content & IP declaration.** *Confirm that all assets are original, properly licensed, or from open sources, and comply with Decentraland's Content Policy. List any third-party assets and their licenses.*
+Plus the program's fixed non-player deliverable: **public repository at week 6**.
 
-[Your declaration]
+**Content & IP declaration.** All yokai models, patterns and scene code are original owner-built work (stylized low-poly, §7 direction) and comply with Decentraland's Content Policy. The environment may use open/CC-licensed assets per §9's art plan — every third-party asset will be listed here with its license before submission. `TBD: the concrete asset list — it cannot exist before the assets do; compiled at week 4's art pass.` No third-party IP anywhere in the concept: "yokai" is folklore, and the comparables in §8 are references, not assets.
 
 ---
 

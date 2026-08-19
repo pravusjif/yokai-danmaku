@@ -1,158 +1,245 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yokai Danmaku — shortGDD (stage 2)</title>
+<title>Yokai Danmaku — short GDD (v3)</title>
 <style>
   :root{
-    --bg:#0b0e17; --card:#131829; --ink:#e8ecf8; --dim:#9aa3bf;
-    --neon:#7df1e2; --pink:#ff7ac2; --gold:#ffd479; --line:#26304d;
-    --ok:#7df19a; --warn:#ffd479; --bad:#ff8a8a;
+    --bg:#0d0e14; --panel:#151725; --ink:#e8e6f0; --dim:#9a97ad;
+    --neon:#ff3d8a; --cyan:#3de1ff; --gold:#ffcf5c; --line:#2a2d42;
+    --ok:#5cff9d; --warn:#ffcf5c; --dead:#ff6b6b;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Avenir Next",Avenir,"Segoe UI",sans-serif;padding:32px 16px}
-  .deck{max-width:880px;margin:0 auto;display:grid;gap:28px}
-  .slide{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px 32px}
-  .slide h2{margin:0 0 6px;font-size:1.05rem;letter-spacing:.14em;text-transform:uppercase;color:var(--neon)}
-  .slide h3{margin:18px 0 6px;font-size:1rem;color:var(--gold)}
-  .kicker{color:var(--dim);font-size:.85rem;margin:0 0 14px}
-  .cover{text-align:center;padding:48px 32px;background:linear-gradient(160deg,#131829 60%,#1a1230)}
-  .cover h1{margin:0;font-size:2.6rem;letter-spacing:.06em}
-  .cover h1 span{color:var(--pink)}
-  .cover p.tag{color:var(--neon);font-size:1.15rem;margin:12px auto 0;max-width:600px}
-  .cover p.meta{color:var(--dim);margin-top:18px;font-size:.9rem}
-  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.92rem}
-  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
-  th{color:var(--neon);font-weight:600;background:#0f1424}
-  .pill{display:inline-block;border-radius:20px;padding:1px 10px;font-size:.78rem;font-weight:600}
-  .p-ok{background:#123324;color:var(--ok)} .p-warn{background:#332a12;color:var(--warn)}
-  .p-bad{background:#331414;color:var(--bad)} .p-dim{background:#1c2338;color:var(--dim)}
-  ul{margin:8px 0;padding-left:20px} li{margin:4px 0}
-  .fact{border-left:3px solid var(--pink);padding:6px 14px;margin:12px 0;background:#171226;border-radius:0 8px 8px 0}
-  .quote{border-left:3px solid var(--neon);padding:6px 14px;margin:12px 0;color:var(--ink);font-style:italic;background:#101a26;border-radius:0 8px 8px 0}
-  img{max-width:100%;border-radius:10px;border:1px solid var(--line)}
-  .stamp{text-align:center;color:var(--dim);font-size:.85rem;padding:8px}
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  @media(max-width:640px){.cols{grid-template-columns:1fr}}
-  .tbd{color:var(--warn);font-size:.88rem}
-  .small{font-size:.88rem;color:var(--dim)}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 "Avenir Next","Segoe UI",system-ui,sans-serif;}
+  .wrap{max-width:960px;margin:0 auto;padding:2.5rem 1.5rem 5rem}
+  header.hero{border-bottom:2px solid var(--neon);padding-bottom:1.2rem;margin-bottom:2rem}
+  h1{font-size:2.4rem;margin:.2rem 0;letter-spacing:.03em}
+  h1 .jp{color:var(--neon)}
+  .stamp{color:var(--dim);font-size:.8rem;letter-spacing:.05em;text-transform:uppercase}
+  h2{font-size:1.35rem;color:var(--cyan);border-left:4px solid var(--neon);
+     padding-left:.6rem;margin-top:2.6rem}
+  h3{font-size:1.05rem;color:var(--gold);margin-top:1.6rem}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.92rem}
+  th,td{border:1px solid var(--line);padding:.5rem .65rem;vertical-align:top;text-align:left}
+  th{background:var(--panel);color:var(--cyan);font-weight:600}
+  .tablewrap{overflow-x:auto}
+  .meta td:first-child{color:var(--dim);width:32%}
+  blockquote{border-left:3px solid var(--gold);margin:1rem 0;padding:.4rem 1rem;
+    background:var(--panel);font-style:italic}
+  .tag{display:inline-block;font-size:.72rem;padding:.05rem .45rem;border-radius:.6rem;
+    border:1px solid;margin:0 .15rem;white-space:nowrap;vertical-align:baseline}
+  .hyp{color:var(--warn);border-color:var(--warn)}
+  .tbd{color:var(--cyan);border-color:var(--cyan)}
+  .ok{color:var(--ok);border-color:var(--ok)}
+  .dead{color:var(--dead);border-color:var(--dead)}
+  .dim{color:var(--dim)}
+  .rule{margin:1.1rem 0;padding:.8rem 1rem;background:var(--panel);border:1px solid var(--line);
+    border-radius:.4rem}
+  .rule b:first-child{color:var(--neon)}
+  img{max-width:100%;border:1px solid var(--line);border-radius:.4rem}
+  figcaption{font-size:.82rem;color:var(--dim);margin-top:.35rem}
+  code{background:var(--panel);padding:.08rem .35rem;border-radius:.25rem;font-size:.88em}
+  ul{padding-left:1.3rem}
+  .score{font-size:1.05rem;color:var(--ok)}
+  a{color:var(--cyan)}
 </style>
 </head>
 <body>
-<div class="deck">
+<div class="wrap">
 
-  <div class="slide cover">
-    <h1>YOKAI <span>DANMAKU</span></h1>
-    <p class="tag">A shared bullet-hell arena in haunted neo-Tokyo: every avatar survives the same yokai's pattern together, and timed deflects are the only way to banish it.</p>
-    <p class="meta">Creator Success proposal · stage 2 (pitch) · Pravus, solo, ~20h/week · requested round: v1<br>
-    Status: playable core-loop greybox in SDK7 — deflect 92% intended-hit, 150 projectiles @ 112 fps, anti-camping machine-verified · <span class="tbd">TBD: public link before submission</span></p>
-  </div>
+<header class="hero">
+  <div class="stamp">Decentraland Experience Proposal · Creator Success Program · short GDD</div>
+  <h1>Yokai <span class="jp">Danmaku</span></h1>
+  <div class="stamp">rendered from shortGDD.md · v3 · 2026-08-19 · stage 3 (short GDD / ten-pager) closed — .md is the source of truth</div>
+  <table class="meta">
+    <tr><td>Experience name</td><td><b>Yokai Danmaku</b></td></tr>
+    <tr><td>Studio / team</td><td>Pravus (solo)</td></tr>
+    <tr><td>Date</td><td>2026-08-19</td></tr>
+    <tr><td>Contact</td><td><span class="tag tbd">TBD: Discord handle</span> + pravus@decentraland.org</td></tr>
+  </table>
+</header>
 
-  <div class="slide">
-    <h2>1 · The Hook</h2>
-    <p>It's like <strong>NieR: Automata's bullet hell</strong>, but the arena is <strong>shared</strong> — you and every other avatar in the plaza survive the same pattern together.</p>
-  </div>
+<h2>0 · TL;DR</h2>
+<div class="tablewrap"><table>
+<tr><td class="dim">One-line concept</td><td>A shared bullet-hell arena in haunted neo-Tokyo: every avatar survives the same yokai's pattern together, and timed deflects are the only way to banish it.</td></tr>
+<tr><td class="dim">Team &amp; hours/week</td><td>Solo (Pravus), ~20 h/week</td></tr>
+<tr><td class="dim">Current status</td><td>Playable core-loop greybox in SDK7 (desktop Explorer) — the H1/H2 experiment builds in this repo: aimed deflect at 92% intended-hit rate, 150 projectiles at 112 fps, anti-camping machine-verified. <span class="tag tbd">TBD: public link before submission</span></td></tr>
+<tr><td class="dim">Live at end of Week 6</td><td>Players drop into a persistent arena to banish escalating yokai together — with a weekly haunting board, a filling scrapbook, and a Friday Great Haunting.</td></tr>
+<tr><td class="dim">Requested round</td><td>v1</td></tr>
+</table></div>
 
-  <div class="slide">
-    <h2>2 · First Session</h2>
-    <p>You spawn on a neon walkway ringing a sunken arena — below, glowing orbs bloom in slow spirals (the haunting never sleeps, even over an empty pit). You drop in as a wave starts; sidestep, near-miss chime. An orb flashes blue — you press, and it ricochets back, punching a hole the avatar beside you dives through. Every deflect chips the yokai's bar; three waves in it shatters and the rim previews the next round — visibly denser.</p>
-    <p class="quote">The last thing you see before leaving: this week's haunting board catching your name — your deepest round as a mark, the Sunday countdown ticking beside it. It won't survive tonight's crowd unless you come back.</p>
-  </div>
+<h2>1 · The Hook</h2>
+<p>It's like NieR: Automata's bullet hell, but the arena is shared — you and every other avatar in the plaza survive the same pattern together.</p>
 
-  <div class="slide">
-    <h2>3 · Core Loop</h2>
-    <p class="kicker">One wave ≈ 40 s (measured) · one round ≈ 2–2.5 min · session = collective run to the wipe, target median 8–15 min</p>
-    <table>
-      <tr><th>Verb</th><th>What you do</th><th>Why again</th></tr>
-      <tr><td><strong>READ</strong></td><td>Watch the pattern, find the gap</td><td>Every wave draws a new pattern</td></tr>
-      <tr><td><strong>WEAVE</strong></td><td>Thread your avatar through</td><td>Gaps sweep from a random start every volley — no fixed spot survives (measured)</td></tr>
-      <tr><td><strong>DEFLECT</strong></td><td>Timed, camera-aimed ricochet</td><td>Punches a hole for everyone; the only damage to the yokai</td></tr>
-      <tr><td><strong>SURVIVE</strong></td><td>Outlast the wave</td><td>Empty the bar → banish → a denser yokai</td></tr>
-    </table>
-    <div class="fact"><strong>Anti-camping is law, not a hazard:</strong> H2-01 proved the bar makes camping correct wherever a pattern permits it; the redesigned pattern law (undeflectable wall volleys, sweeping twin entrances) refuses it — zero majority-camped rounds banished, machine-logged. Standing law: <em>every yokai's every wave must carry an anti-camping element.</em></div>
-    <p class="small">10th repetition: other players (crowd = the variety — unmeasured, v1), rising difficulty, skill expression. Solo floor held: 15 voluntary waves / 4 runs, quit by choice. Knockout = spectate one wave from the walkway; full wipe resets the haunting to round 1.</p>
-  </div>
+<h2>2 · First Session — written as "you"</h2>
+<p>You spawn on a neon-lit walkway ringing a sunken arena. Below, glowing orbs bloom outward in slow spirals, and a handful of avatars weave between them. A pulsing ring on the floor marks the drop-in point. <span class="tag hyp">HYPOTHESIS → H1-04</span></p>
+<p>You drop in as a new wave starts — wide, slow arcs. You sidestep the first one; a low chime marks the near miss. Then an orb flashes blue as it closes on you — you press, and it ricochets back through the pattern, punching a hole the avatar beside you dives through.</p>
+<p>Wave by wave the pattern tightens, and every deflect — yours and everyone else's — chips the yokai's glowing bar above the pit. Three waves in, the bar shatters and the yokai is banished; the arena rim lights up with the next round's name and a preview of its pattern — visibly denser.</p>
+<p>The last thing you see before leaving: the rim board catching your name — this week's haunting board, your deepest round sitting on it as a mark, the countdown to Sunday's reset ticking beside it. It will not survive tonight's crowd unless you come back to push it deeper.</p>
 
-  <div class="slide">
-    <h2>4 · Why Players Come Back</h2>
-    <p class="quote">"Last night's deepest round — <em>we got to round 7</em> — is on this week's haunting board with my name on it, and it will not survive tonight's crowd unless I come defend it."</p>
-    <ul>
-      <li><strong>Hook 1 — Weekly haunting board.</strong> Brackets of 20, remainder merges (below 40 weekly placers: one board of everyone — sized by arithmetic to DCL-real traffic). Median player has ~7 beatable marks within 2 rounds. Known fact: #1 is usually a runaway — the drama is mid-table defense, never "beat the #1". Resets Sunday 00:00 UTC.</li>
-      <li><strong>Hook 2 — The Great Haunting.</strong> Friday 20:00 UTC, one automated mega-yokai template with its own dedicated model. The calendar is the platform's only notification system.</li>
-      <li><strong>Hook 3 — The yokai scrapbook.</strong> Silhouettes fill permanently when you stand through a banishment. Pacing measured: no wall (last page ~3 sessions) — and honestly a <em>fast book</em> at v1 scale; its long pull is the mega page + content drops.</li>
-    </ul>
-    <p><strong>Day 7:</strong> league tier over your head, lifetime best, 1–2 Great Haunting charms on your avatar, scrapbook filling. <strong>Long-term:</strong> the Exorcist wearable — 4 Great Haunting banishments, calendar-gated one month, charm-visible during the climb (mint at v2; charms ship in v1).</p>
-  </div>
+<h2>3 · Core Loop</h2>
+<p class="dim">Stage 2 — loop table resolved 2026-08-14. All three loop-structure claims are closed: H2-01 failed, H2-03 validated in its place (the goal-structure break is closed), and H2-02's solo floor survived the owner sitting (both 2026-08-17) — its crowd half waits for v1 testers.</p>
+<div class="tablewrap"><table>
+<tr><th>#</th><th>Step (verb)</th><th>What the player does</th><th>Why do it again?</th></tr>
+<tr><td>1</td><td><b>READ</b></td><td>Watch the incoming bullet pattern and find the gap</td><td>Every wave draws a new pattern</td></tr>
+<tr><td>2</td><td><b>WEAVE</b></td><td>Move your avatar through the gap</td><td>The gap never opens in the same place — wall entrances sweep every volley from a random start, so every wave is a new route (measured: no fixed spot survives — H2-03 validated 2026-08-17)</td></tr>
+<tr><td>3</td><td><b>DEFLECT</b></td><td>A timed press ricochets the flashing bullet wherever your camera points — aim is part of the verb (decided 2026-08-13) — clearing a hole in the pattern <b>for everyone in the arena</b></td><td>Your deflect visibly helps the players around you — and it is the only thing that damages the yokai</td></tr>
+<tr><td>4</td><td><b>SURVIVE</b></td><td>Outlast the wave; the next one starts tighter</td><td>Empty the yokai's life bar to banish it — the next round summons a denser yokai</td></tr>
+</table></div>
 
-  <div class="slide">
-    <h2>5 · Social by Design</h2>
-    <div class="cols">
-      <div><h3>Better with others</h3><p class="small">Solo, your knockout is the run's death; with others the run survives your mistakes. Deflects stack — deep rounds are crowd-gated. Every deflect is visible help in the pattern itself.</p></div>
-      <div><h3>Quiet hour</h3><p class="small">The haunting runs over an empty pit; the rim shows last night's names and the Friday countdown. Solo floor is measured fun. Any second player who drops in is instantly in your run — the shared arena is the matchmaking.</p></div>
-      <div><h3>Bystander</h3><p class="small">The whole loop is world-space. Five seconds of watching teaches both verbs; knocked-out players are a manufactured audience, one wave from playing again. Bullets never reach the walkway; the wall volley ejects AFK bodies.</p></div>
-      <div><h3>The clip</h3><p class="small">The last-one-standing banish: walkway full of invested spectators, one player lands the final deflect, the yokai shatters skyward over live action (no-pause law stands). One shared spectacle in v1.</p></div>
-    </div>
-  </div>
+<div class="rule"><b>Goal structure (decided 2026-08-14; risk confirmed real 2026-08-15):</b> each round summons a yokai with a visible life bar. Deflected bullets are the only damage; emptying the bar banishes it, and the next round's yokai attacks denser. The round is <b>bar-driven</b>: waves keep coming and tightening until the bar hits zero, with the bar sized so a competently-deflecting crowd banishes in about 3 waves — a crowd that deflects poorly gets a longer, denser round and slides toward the wipe, so bad play <i>is</i> the difficulty curve. Deflect is the win verb — the fiction already says why: you throw the yokai's own fury back at it. <b>Break found and closed (H2-01 failed 2026-08-15 → H2-03 validated 2026-08-17, owner probes, desktop):</b> under the original spiral-only law the bar made camping the correct way to play (H2-01: a near-still rim player banished three yokai at 70% camp, zero knockouts). The pattern law now refuses camping by design: alongside the spiral, an <b>undeflectable wall volley</b> sweeps the pit every 7 s — 60 unjumpable pillars with two 60° entrances that never open in the same place, threat reaching every radius down to the floor edge, spiral spawn blooming from the core. Measured under deliberate adversarial camping: zero majority-camped rounds banished — rim camping (98% camp) and the dense close band (55% camp) both ended in a knockout inside one wave, while a moving player pays ~1 wall hit per 200 s. Anti-camping is a pattern-design law, not a bolted-on hazard; the harder two-ring volley variant is reserved as a hard-tier yokai signature (<code>decisions.md</code>). The 3-hit knockout rule (owner decision 2026-08-15) proved load-bearing in both directions: it forgives a mover's misread volley, and it is exactly the budget the walls spend on a camper.</div>
 
-  <div class="slide">
-    <h2>7 · World &amp; Look</h2>
-    <p>Neo-Tokyo's grid is haunted by digital yokai; each round's bullet pattern is that spirit's fury given light. Ghostwire: Tokyo × NieR's glowing-orb bullet language × Akira's night palette — stylized PBR, baked lighting.</p>
-    <img src="01-find-the-fun/H1-01-greybox.png" alt="H1-01 greybox — sunken arena, walkway ring, spiral pattern mid-bloom">
-    <p class="small">H1-01 greybox (desktop Explorer, 2026-08-13) — primitives only; art direction not yet built.</p>
-  </div>
+<div class="rule"><b>Death rule (decided 2026-08-14):</b> a hit knocks you out for the rest of the current wave — you are thrown back onto the walkway to spectate, and you drop back in when the next wave starts. Your personal <b>clean streak</b> (waves survived without a hit) resets to zero; the group's round never rolls back. Ejected players watching from the rim are part of the design — they populate the walkway a newcomer sees in §2 and feed §5's bystander test.</div>
 
-  <div class="slide">
-    <h2>8 · Comparables</h2>
-    <table>
-      <tr><th></th><th>Fall Guys</th><th>NieR: Automata</th></tr>
-      <tr><td><strong>Worked</strong></td><td>Mass shared arena, readable by watching; knockouts become an audience</td><td>Readable 3D bullet patterns + Japanese cyberpunk mood</td></tr>
-      <tr><td><strong>Didn't</strong></td><td>Elimination is terminal — the crowd drains</td><td>Combat depth beyond a small team's scope</td></tr>
-      <tr><td><strong>We differ</strong></td><td>Knockout lasts one wave, never the run; one persistent world, not lobbies</td><td>Bullet language kept, combat stripped: one deflect, shared survival, short sessions</td></tr>
-    </table>
-  </div>
+<div class="rule"><b>Reset rule (decided 2026-08-14):</b> if a wave ends with nobody left standing in the pit, the yokai wins — the haunting resets to round 1. The drop-in ring stays open mid-round, so the arena is always enterable, and the ramp self-corrects to the current crowd's skill: deep rounds die fast, so newcomers mostly arrive at low rounds. A session is therefore a <b>collective run</b> — "we got to round 7" — that ends when a wipe breaks the banishment chain. Solo at a dead hour this collapses to "every hit resets the run" — coherent for the genre, but §5's quiet-hour test must look at it.</div>
 
-  <div class="slide">
-    <h2>9 · Six Weeks · ~120 h</h2>
-    <p class="small">Systems ~77 h (sync 30 · retention 22 · arena art 15 · FTUE/sound 10) → yokai budget 20–25 h → <strong>3–4 regular yokai (2 tiers) + 1 mega with its own model</strong>; week 1 times the first unit (H2-07) and decides the 3-vs-4 fork.</p>
-    <table>
-      <tr><th>Wk</th><th>Playable</th></tr>
-      <tr><td>1</td><td>Greybox → production scene; yokai #1 timed; sync spike (shared seed, events-only)</td></tr>
-      <tr><td>2</td><td><strong>Milestone:</strong> full loop multiplayer — pattern, bar, deflects, knockouts, wipe</td></tr>
-      <tr><td>3</td><td>League board + Sunday reset; scrapbook; remaining yokai</td></tr>
-      <tr><td>4</td><td><strong>Milestone:</strong> Great Haunting + mega model; charms; art pass; sound; <em>mobile playtest</em></td></tr>
-      <tr><td>5–6</td><td>Live in the World; funnel instrumented; fix pass; public repo</td></tr>
-    </table>
-    <p><strong>Cut (exactly 3):</strong> player-as-boss mode · the mintable Exorcist wearable (charms + climb ship; mint at v2) · hard-tier signature patterns.<br>
-    <strong>Top risk:</strong> shared-pattern sync. Plan A: deterministic seed + sparse events · B: grace-window holes · C: shared bar, per-client phase — the shippable floor.<br>
-    <strong>Live-ops:</strong> both weekly events automated — ≤1 person-day/week.</p>
-  </div>
+<div class="rule"><b>Roster mapping (decided 2026-08-14):</b> the yokai roster is grouped into difficulty tiers; each round summons a <b>random yokai from that round-band's tier</b>, preferring ones the pit has not seen today — never a fixed one-yokai-per-round ladder. Every authored pattern in that roster is bound by the <b>standing anti-camping law (owner decision 2026-08-17)</b>: every yokai's every wave must carry an anti-camping element — no pattern may be winnable from one 2.5 m spot — with H2-03's camping-meter probe as the acceptance test (a majority-camped round must end in a knockout before the banish). Anti-camping is a per-pattern authoring requirement each new yokai must pass, not a property of the one wall mechanic that proved it. Two runs to round 5 meet different yokai, so authored variety strengthens repetition without becoming its load-bearing source; the scrapbook (§4.3) fills breadth-first at low tiers while deep tiers stay rare, skill-gated pages; Great Haunting mega-yokai are pages too (attendance pages, not depth pages). The v1 roster slice is sized in §9: 3–4 regular yokai across 2 tiers + 1 mega, self-correcting on week 1's measured unit cost (H2-07). The v1 tier bands are settled (H2-06 paper rung, owner-confirmed 2026-08-19): tier 1 = rounds 1–3, tier 2 = rounds 4 and deeper.</div>
 
-  <div class="slide">
-    <h2>11 · Team</h2>
-    <p>Pravus — everything (design, SDK7/TS, 3D &amp; art) · ~20h/week · strongest evidence: this repo's working greybox. <span class="tbd">TBD: past-work links.</span> Named gap: 3D/art at roster scale — plan: owner-built stylized low-poly + open/CC environment assets.</p>
-  </div>
+<ul>
+<li><b>One loop takes:</b> one wave ≈ 40 s — measured in the H1 greybox (2026-08-13), inside the 30–90 s band. One round = waves until the bar empties, tuned to ~3 waves + the rim's preview beat ≈ 2–2.5 min.</li>
+<li><b>One session lasts:</b> one collective run to the wipe; target median 8–15 min. <span class="tag tbd">TBD: measure median run length in the H2 greybox, then in the live funnel (§10)</span></li>
+<li><b>Why is the 10th repetition still fun?</b> Three named sources, all already designed: <b>other players</b> — the crowd is the variety: holes open where someone else aimed a deflect, the bar melts at crowd speed, every run has a different cast; <b>rising difficulty</b> — every banishment buys a denser yokai, so repetition climbs instead of looping flat; <b>skill expression</b> — the aimed deflect and the clean streak give mastery a visible ceiling. Authored per-yokai pattern variety is deliberately the garnish, not the answer — content gets consumed once (the v1 yokai count is a §9 scope decision). <b>The solo floor held (H2-02 survived, owner self-test, desktop, 2026-08-17)</b> — but only after pacing became law: wall entrances reroll to a random azimuth every volley (a learnable sweep read as repetitive), a banish never pauses play (the next yokai opens fire under its own banner), and the spiral never holds while a wall spawns. Under those three, the owner played 15 voluntary waves across 4 runs in one sitting and quit by choice — against a same-day baseline of "pretty repetitive" before the changes (<code>decisions.md</code>). The crowd source — other players as the variety, the strongest claimed of the three — remains unmeasured and needs v1 external testers. <span class="tag hyp">HYPOTHESIS → H2-02</span></li>
+<li><b>Why the FIRST repetition feels good:</b> reading a wall of glowing bullets, finding the gap, and threading your whole avatar through it — with a deflect that punches a visible hole in the pattern. The verb held in the greybox: with no score, reward or goal attached, the owner voluntarily played 3 consecutive waves and quit by choice (H1-01 survived, owner self-test, desktop, 2026-08-13). Two conditions proved load-bearing and are now part of the verb: the deflect is <b>scarce</b> (1.5 s cooldown — free spam killed the weave entirely) and the telegraph is <b>honest</b> (exactly one bullet glows blue: the one E will send back, and only if its path would hit or graze you). Whether the verb pulls players who did not invent it is unmeasured — that is H1-04's fresh-eyes test. <span class="tag hyp">HYPOTHESIS → H1-01</span> The deflect timing is fair on desktop — measured, not felt: 12/13 intended deflects landed (92% vs the ≥70% bar) on the aimed verb, and the owner could predict each landing before pressing (H1-02 validated 2026-08-13). <b>The touch verb held an on-device owner self-test (H1-02 mobile rung survived, 2026-08-19), but only with mobile-only accommodations that are now part of the verb's per-platform spec:</b> deflect fires from E/F on-screen buttons (tap-the-flashing-bullet is built but dead on the mobile client — suspected client bug, works on desktop); a landed deflect snaps to the yokai core when the camera is within 30° of it (aim stays an intent, precision is assisted); and a whiff press spends no cooldown on mobile — the desktop scarcity rule (whiff costs the full 1.5 s; E-spam kills the weave) stands unchanged on desktop. Raw desktop controls on touch were unplayable — this is a designed variant, not a port. The deflect ratio measured <i>on device</i> remains open: no counted wave was run on the phone. <span class="tag hyp">HYPOTHESIS → H1-02</span> Genre density actually runs on desktop — measured: 112 avg render FPS with 150 simultaneous glowing projectiles, zero hiccup frames, and the scene tick unchanged from 35-bullet load (H1-03 validated 2026-08-13). Pattern design is not FPS-constrained on desktop. The 150-projectile read on mobile was <b>deferred at owner request</b> (2026-08-19) with one informal data point — normal gameplay density (~35–70 bullets) ran fine on the owner's phone — so the mobile density budget is still a claim, not a fact. <span class="tag hyp">HYPOTHESIS → H1-03</span></li>
+</ul>
 
-  <div class="slide">
-    <h2>Appendix · Hypothesis Log</h2>
-    <table>
-      <tr><th>ID</th><th>Claim</th><th>Status</th></tr>
-      <tr><td>H2-04</td><td>Board placers return on Day 2 (paper: K=20 + merge settled)</td><td><span class="pill p-ok">validated · paper</span> <span class="pill p-dim">behaviour → v1</span></td></tr>
-      <tr><td>H2-06</td><td>Scrapbook pulls returns (paper: no wall; fast book noted)</td><td><span class="pill p-ok">validated · paper</span> <span class="pill p-dim">behaviour → v1</span></td></tr>
-      <tr><td>H1-01</td><td>The verb is fun with nothing attached</td><td><span class="pill p-ok">survived</span></td></tr>
-      <tr><td>H1-02</td><td>Deflect timing is fair (92%)</td><td><span class="pill p-ok">validated</span> <span class="pill p-warn">mobile pending</span></td></tr>
-      <tr><td>H1-03</td><td>150 projectiles ≥60 fps (112 avg)</td><td><span class="pill p-ok">validated</span> <span class="pill p-warn">mobile pending</span></td></tr>
-      <tr><td>H2-01</td><td>Life bar preserves the weave</td><td><span class="pill p-bad">failed</span> → led to the pattern law</td></tr>
-      <tr><td>H2-02</td><td>10th wave still fun (solo floor)</td><td><span class="pill p-ok">survived</span> <span class="pill p-dim">crowd → v1</span></td></tr>
-      <tr><td>H2-03</td><td>Pattern law refuses camping</td><td><span class="pill p-ok">validated</span></td></tr>
-      <tr><td>H2-07</td><td>One yokai ≤6 h to build</td><td><span class="pill p-dim">parked → v1 week 1</span></td></tr>
-      <tr><td>H1-04</td><td>Fresh eyes dodge within 5 s</td><td><span class="pill p-dim">deferred → v1 testers</span></td></tr>
-      <tr><td>H2-05</td><td>Friday concurrency spikes</td><td><span class="pill p-dim">parked → v1 live</span></td></tr>
-    </table>
-    <p class="small">Full IF/THEN rows, criteria and verdict trails: shortGDD.md Appendix A + design/02-core-loop/. Open at stage 3: §6 mobile, §10 success criteria, §12 deliverables.</p>
-  </div>
+<h2>4 · Why Players Come Back</h2>
+<p>Decentraland cannot send push notifications, so every hook below lives in the player's own memory or their calendar — nothing here assumes a reminder the platform cannot send.</p>
 
-  <div class="stamp">rendered from shortGDD.md · v2 · 2026-08-19 · stage 2 (pitch) closed — .md is the source of truth</div>
+<h3>4.1 The Day-2 sentence</h3>
+<blockquote>"A player who enjoyed Day 1 comes back on Day 2 because last night's deepest round — <i>we got to round 7</i> — is sitting on this week's haunting board with their name on it, and it will not survive tonight's crowd unless they come defend it."</blockquote>
+<p>The mark decays toward the Sunday reset, so it is always time-anchored; defense-of-a-mark lives in the player's own memory, which is the only notification system the platform has. Built entirely from state the loop already produces — "deepest round reached" is the session's natural output, zero new systems. Presumes hook 1 in §4.3: the weekly small-league haunting board. <span class="tag hyp">HYPOTHESIS → H2-04</span></p>
+
+<h3>4.2 The Day-7 player</h3>
+<p>A Day-7 player has, by name: a <b>league rank tier</b> from Sunday's final standing, shown on the rim beside their name and over their head in the arena; a <b>lifetime personal best</b> (deepest round ever, never resets) standing next to their weekly mark; <b>1–2 Great Haunting charms</b> already hanging visibly on their avatar (§4.4); and a <b>scrapbook filling in</b> — x/N yokai revealed from silhouette, one for each yokai whose banishment they stood through (§4.3, hook 3). The skill is persistent too: they read patterns a wave earlier than they did on Day 1.</p>
+
+<h3>4.3 Return hooks — three chosen</h3>
+<p><b>Hook 1 — Weekly small-league haunting board.</b> Your mark is the highest round in which you were <b>standing in the pit when its yokai was banished</b> — present and alive, not spectating from the walkway. That keeps the mark personal even though the run is collective, and it cannot be farmed by camping — H2-03's pattern law refuses that, measured (validated 2026-08-17). League size is settled by arithmetic (H2-04 paper rung, validated 2026-08-19): <b>brackets of 20, grouped as players first place each week, with the remainder folding into the last bracket</b> — a bracket is 20–39 people, and below 40 weekly placers (the realistic v1 case at DCL traffic — owner estimate 2026-08-19) the board is simply one weekly league of everyone. In the expected case the median player has ~7 beatable marks within 2 rounds, so a mid-table mark genuinely will not survive the week. Never one large global board: past ~40 placers the split keeps ranks contested. Known by the same arithmetic: the bracket's #1 is usually a runaway outlier — the board's pull is mid-table mark defense, never "beat the #1". Resets Sunday 00:00 UTC; the arena rim shows your league, your mark, and the countdown. The behaviour claim — placers return on Day 2 at a visibly higher rate — waits for the live v1 funnel. <span class="tag hyp">HYPOTHESIS → H2-04</span></p>
+<p><b>Hook 2 — The Great Haunting, Friday 20:00 UTC.</b> Once a week the arena summons a mega-yokai: one fixed, reusable round template — bigger bar, denser opening wave, and a week of warning on the rim. Being in the pit at its banishment is the point (what it pays is §4.4's long-term goal). One automated template, no host required — the event calendar is the platform's only real notification system, carried by the in-world rim countdown plus Discord. <span class="tag hyp">HYPOTHESIS → H2-05</span></p>
+<p><b>Hook 3 — The yokai scrapbook (collection).</b> A panel showing every yokai in the shipped roster, each a black silhouette until you have stood in the pit at that yokai's banishment — then it fills in, permanently. Pacing is measured, not hoped (H2-06 paper rung, validated 2026-08-19): no page is a wall — the last regular page lands in ~3 expected sessions — and the book is not spent on day one at expected skill. The honest limit is the opposite: <b>at v1 scale the regular book is a fast book</b> — skilled or crowd-carried players can finish its regular pages in one sitting — so past the first sessions the scrapbook's pull rests on the mega-yokai's calendar page and on each content drop adding pages, and that is how this hook is sold: a light early-week assist that grows into the season-scale arc of §4.4, never v1's main retention claim. The roster ambition is large (~30 yokai over the program's rounds — owner's call); the v1 slice is sized in §9, and the panel only ever shows the shipped roster, so no slot can be a promise the build cannot keep. The behaviour claim — partial-page players return within 7 days at a higher rate — waits for the live v1 funnel. <span class="tag hyp">HYPOTHESIS → H2-06</span></p>
+
+<h3>4.4 The long-term goal</h3>
+<p><b>The Exorcist wearable</b> — awarded for standing in the pit at <b>4 Great Haunting banishments</b>. Calendar-gated by construction: four Fridays is a month, and no grinding compresses it. Progress is stranger-visible <i>during</i> the climb, not only at the end — each attended banishment hangs a visible charm on your avatar in-scene (one attachment model, reused ×4), so a stranger sees 3/4 charms and asks. The finished wearable travels everywhere in Decentraland: the most retained players become the free marketing channel. Behind it sits the longer arc: completing the yokai scrapbook (§4.3) — season-scale, and it grows with each program round's content drop.</p>
+
+<h2>5 · Social by Design</h2>
+<p><b>What is better — not just possible — with 2+ players?</b> (decided 2026-08-17) <b>Alone, your knockout is the run's death; with others, it isn't.</b> Solo, a 3rd hit empties the pit and wipes the haunting to round 1. With 2+ players, someone else keeps the wave alive while you spectate, and you drop back in next wave — a second player literally converts "every knockout resets the run" into "the run survives your mistakes." On top of that, <b>deflects stack:</b> the bar melts at crowd speed, so deep rounds — and the deep-tier scrapbook pages and board marks that live there — are reachable with a crowd in a way they structurally aren't solo. And <b>every deflect is visible help:</b> the hole you punch is a hole someone else dives through, so cooperation happens in the pattern itself, not in a menu. All three are existing §3 rules, no new systems. <span class="tag tbd">TBD: how much faster a bar melts with N deflectors is arithmetic — touched by H2-04's league sizing, measured in the live v1 funnel</span></p>
+<p><b>The quiet-hour test.</b> (decided 2026-08-17) <b>What they see:</b> the haunting never sleeps — the yokai and its pattern run even over an empty pit (decided 2026-08-17), so the arriving player sees live gameplay from the walkway, never a dead room. The rim shows this week's haunting board (real names, real marks — traces of the people who were here last night) and the countdown to Friday's Great Haunting. <b>What they do:</b> drop in solo — and the solo floor is not a hope, it's measured: H2-02's owner sitting held for 15 voluntary waves across 4 runs. Solo, the wipe rule means a bad wave resets the run — coherent for the genre. <b>How they meet someone by design:</b> the shared arena <i>is</i> the matchmaking — any second player who drops in is instantly in your run, same pattern, same bar, no party UI, no chat, no coordination; their first deflect already helps you. And when nobody comes, the design doesn't fight the concurrency curve — Friday 20:00 UTC concentrates scattered visitors into one crowd.</p>
+<p><b>The bystander test.</b> (decided 2026-08-17) The entire loop is world-space — no panel is where the game happens. Five seconds of watching from the walkway teaches both verbs: bodies threading gaps between fat glowing orbs says <i>dodge</i>, and blue flash → press → ricochet → hole-plus-bar-chip says <i>that's how you fight back</i>. The audience is manufactured by rule, not hoped for: knocked-out players spectate from the walkway until the next wave, so the arena produces its own watchers — and every watcher is one wave away from being a player again. What a bystander can't do is break the run: bullets never reach the walkway, an idle body in the pit is knocked out by the wall volley within a wave and ejected (the anti-camping law doubles as an AFK cleaner), and the open drop-in ring can't be blocked by a standing avatar. That "five seconds of watching teaches the verbs" is a fresh-eyes claim — it rides with H1-04's v1 fresh-eyes test (same testers, same session, spectator-side observation), not as a separate hypothesis. <span class="tag hyp">HYPOTHESIS → H1-04</span></p>
+<p><b>Bring-a-friend.</b> (decided 2026-08-17) The invitation is structural, not bribed: your board mark is capped by crowd depth — solo, bars melt too slowly to reach the rounds where marks are worth defending — so <i>"come deflect with me tonight"</i> is an instrumental ask the design produces by itself, and Friday 20:00 UTC gives it a natural time anchor (<i>"come Friday — the Great Haunting counts toward the Exorcist wearable"</i>). Deliberately <b>no both-earn-double bonus in v1</b>: bolted-on incentive systems at this team size are retention theatre (consistent with the no-dailies and no-crew-system calls in <code>decisions.md</code>). If the v1 funnel shows organic invitation underperforming, an invite mechanic is a priced v2 idea (→ <code>ideas.md</code>).</p>
+<p><b>The memorable moment.</b> (decided 2026-08-17) <b>The last-one-standing banish.</b> Round 6, everyone else knocked out — the walkway ring is full of spectators, by rule, all facing the pit — and one player threads the final tightening wave alone and lands the deflect that empties the bar. The <b>banish spectacle</b> fires: the defeated yokai shatters skyward in a burst of light — played <i>over</i> live action, never pausing it (the no-pause law from H2-02 stands; the next yokai is already firing underneath). The spectacle is the screenshot surface, and the walkway crowd are the photographers — they are the ones with free hands, and every one of them had a stake in that wave. v1 ships <b>one shared banish spectacle</b> reused by every yokai (owner decision 2026-08-17); per-yokai death flourishes are v2 garnish, not v1 scope.</p>
+
+<h2>6 · Mobile-First</h2>
+<p>This section was played before it was written: H1-02's touch rung ran four iterated passes on the owner's phone (Creator Hub QR, 2026-08-19), and every claim below comes from that session or names what it left open. The mobile deflect is a <b>designed variant, not a port</b> (decided 2026-08-19): raw desktop controls were unplayable on touch, so the verb carries a per-platform spec.</p>
+<div class="tablewrap"><table>
+<tr><th>Core-loop verb</th><th>How it works with touch controls</th></tr>
+<tr><td><b>READ</b></td><td>No input needed — the genre's bullet language is already touch-native: fat, slow, glowing orbs, and exactly one flashing blue (the deflect target). Cooldown state lives in a bottom-center recharge bar (grey and filling while recharging, solid blue "DEFLECT READY" when live — same blue as the telegraph), added after the on-device pass showed a corner counter is not glanceable while dodging (decided 2026-08-19).</td></tr>
+<tr><td><b>WEAVE</b></td><td>The platform's standard joystick + camera drag, unmodified — the owner played full waves on device with it across all four passes. Timing over precision: gaps are avatar-sized and sweep predictably; nothing in the pattern needs pixel accuracy.</td></tr>
+<tr><td><b>DEFLECT</b></td><td>E/F on-screen buttons fire it — large tap targets, one primary action. Aim is assisted, not precise: a landed deflect snaps to the yokai core when the camera points within 30° of it, so aim stays an intent while precision is forgiven. A whiff press spends no cooldown on mobile; desktop keeps the full 1.5 s whiff cost (free spam killed the weave in H1-01), so scarcity is enforced per platform. The kill-check held on device — touch deflect reads as timing, not luck (H1-02 mobile rung survived, owner self-test, 2026-08-19) — but the ≥7/10 ratio was never counted on the phone. <span class="tag hyp">HYPOTHESIS → H1-02</span></td></tr>
+<tr><td><b>SURVIVE</b></td><td>No input — the outcome of the other three. All survival state is world-space and glance-readable at phone size: the yokai's bar over the pit, knockout throws you visibly to the walkway, the next wave drops you back in.</td></tr>
+</table></div>
+<p><b>UI plan.</b> The game happens in world space — arena, life bar, rim board and countdowns are all in-scene — so the only screen UI during play is the bottom-center deflect recharge bar, placed where a phone-holding thumb and a dodging eye both reach. Screen elements anchor to edges, never to absolute coordinates: the mobile client renders the UI canvas at a different virtual resolution than desktop (measured in the H1-02 rung: 1600×720 on SDK 7.26+ vs the 16:9 desktop canvas), which is exactly how the greybox HUD broke on device and was fixed (right-anchoring, 2026-08-19).</p>
+<p><b>Performance.</b> The single biggest risk is <b>projectile density on the mobile renderer</b> — the genre needs a wall of moving glowing bullets, and every one is an animated emissive entity. Desktop has headroom to spare: 112 avg render FPS at 150 simultaneous projectiles, zero hiccup frames (H1-03 validated 2026-08-13). The same read on the phone was <b>deferred at owner request</b> (2026-08-19) with one informal data point — normal gameplay density (~35–70 bullets) ran fine on the owner's phone — so the mobile bullet budget is still a claim, not a fact. <span class="tag hyp">HYPOTHESIS → H1-03</span> Plan: the <code>DENSITY_TEST = 150</code> knob is still in the code and the on-device read costs minutes, now under the real shipping config (bullets carry tap colliders); it runs no later than week 4's mobile playtest (§9). If 150 fails on device, we bisect to the max N that holds 30 fps and author patterns under a per-platform density budget — patterns are configs, so a lower mobile ceiling is a parameter change, not a redesign. <span class="tag tbd">TBD: the program's 30 fps minimum-hardware bar with up to 20 avatars in the pit — no cheaper honest rung exists for avatar crowd cost; measured at week 4's mobile playtest</span></p>
+<p><b>Desktop-only dependencies.</b> One, found by playing rather than by audit, and the design already survives it: <b>tap-the-flashing-bullet</b> (entity pointer events from direct touch) is built and works on desktop but is dead on the mobile client — suspected client bug, worth an upstream report (H1-02 pass 2, 2026-08-19). It was meant as the most direct touch input; the shipping mobile input is the E/F on-screen buttons, and the tap path stays in the build so it switches on with a client fix — zero redesign. Nothing else leans desktop-only: no hover states, no keyboard combos, no mouse-precision aiming (the 30° core snap replaced it). <span class="tag tbd">TBD: re-check the Desktop vs Mobile Feature Gap tracker before submission — this section's gap list is empirical, not exhaustive</span></p>
+
+<h2>7 · World, Look &amp; Story</h2>
+<p><b>Story / world.</b> Neo-Tokyo's grid is haunted by digital yokai, and each round the arena summons one — its bullet pattern is that spirit's fury given light. You survive the haunting together with everyone in the pit; deflecting a bullet throws the yokai's own fury back at it.</p>
+<p><b>Visual direction.</b> Ghostwire: Tokyo (rain-slick neon shrine streets, yokai in a modern city) · NieR: Automata's glowing-orb bullet language (fat, slow, readable projectiles) · Akira's Neo-Tokyo night palette. Rendered as stylized PBR with baked lighting, consistent with Genesis Plaza quality. <span class="tag dim" style="border-color:var(--dim)">agent-decided — owner named the direction ("cyberpunk yokai"); references chosen to match it</span></p>
+<figure>
+<img src="01-find-the-fun/H1-01-greybox.png" alt="H1-01 greybox — sunken arena, walkway ring, one pattern mid-bloom">
+<figcaption>Greybox screenshot from the H1-01 build (desktop Explorer, 2026-08-13): the sunken arena with its walkway ring, one spiral pattern mid-bloom around the emitter. Primitives only — the yokai art direction above is not yet built.</figcaption>
+</figure>
+
+<h2>8 · Comparables — exactly two</h2>
+<div class="tablewrap"><table>
+<tr><th></th><th>Comparable A — Fall Guys</th><th>Comparable B — NieR: Automata</th></tr>
+<tr><td class="dim">What worked</td><td>A mass shared arena where everyone survives the same obstacle at once — instantly readable by watching, which makes spectating a tutorial. Knockouts become an audience; short rounds keep sessions snackable.</td><td>3D bullet-hell patterns — slow, fat, glowing orbs readable in 3D space — fused with a Japanese sci-fi/cyberpunk mood. The one recognizable name that carries both the genre and the aesthetic of this pitch.</td></tr>
+<tr><td class="dim">What didn't work</td><td>Elimination is terminal: a knocked-out player leaves the match, and the crowd drains as the round goes on. The fun is being in; being out is a menu.</td><td>Combat depth (perfect-dodge timing, weapon combos) and camera precision far beyond a small team's scope; that depth is not what made the bullet patterns memorable.</td></tr>
+<tr><td class="dim">What we do differently</td><td>Our knockout lasts one wave, never the run — the spectator watches from the walkway with a stake in the outcome and drops back in next wave, so the arena never drains and the audience is part of the design (§5). One persistent world instead of matchmade lobbies: the same pit, the same board, all week.</td><td>We keep NieR's bullet language and strip its combat: no shooting, no combos — one shared arena where every avatar survives the same yokai's pattern together, and a single timed deflect that visibly helps everyone. Built for short sessions in a social world, not a 30-hour solo campaign.</td></tr>
+</table></div>
+
+<h2>9 · Six-Week Plan (v1 scope)</h2>
+<p class="dim">Program milestones are fixed: <b>Week 2</b> — functional test version of the core loop (basic single-player and multiplayer working). <b>Week 6</b> — live in your own World, public repository delivered.</p>
+<div class="rule"><b>V1 content slice (decided 2026-08-18 — arithmetic against §11's ~120 h):</b> the build window is ~95 h after weeks 5–6 go to live testing and sign-off; systems eat ~77 h of it (multiplayer sync ~30 · retention systems: board, scrapbook, Great Haunting template, charms ~22 · arena art pass ~15 · FTUE, sound + tooltips, polish ~10), leaving <b>~20–25 h for yokai content</b>. Art plan (a): owner-built stylized low-poly, emissive materials, §7 direction. The Great Haunting mega-yokai gets its <b>own dedicated model</b> (owner call 2026-08-18 — the weekly event must look like an event, never a re-dress): ~8 h with its round template. The honest slice is therefore <b>3–4 regular yokai across 2 tiers + 1 mega-yokai</b>; ~30 yokai stays program-lifetime ambition (§4.3), and the scrapbook panel only ever shows the shipped roster. The plan self-corrects in week 1: H2-07 times the first production yokai — ≤6 h all-in and the slice is 4+mega; over, and the floor is 3+mega. <span class="tag hyp">HYPOTHESIS → H2-07</span></div>
+<div class="tablewrap"><table>
+<tr><th>Week</th><th>What is playable / done</th></tr>
+<tr><td>1 — Prototype definition</td><td>H2 greybox ports into the production scene; yokai #1 built and timed (H2-07); multiplayer sync spike — deterministic pattern from a shared seed, events-only sync design</td></tr>
+<tr><td>2 — Core interaction test version</td><td><b>Program milestone:</b> full loop multiplayer — shared pattern, bar, deflect events, knockouts, wipe — basic single-player and multiplayer working</td></tr>
+<tr><td>3 — Core systems refinement</td><td>League board + Sunday reset; scrapbook panel; remaining regular yokai built</td></tr>
+<tr><td>4 — Playable prototype, final design direction (mobile playtest)</td><td><b>Program milestone:</b> Great Haunting template + mega model; charms; arena art pass; sound + tooltips; mobile playtest</td></tr>
+<tr><td>5–6 — Live testing and sign-off</td><td>Live in the World; §10 funnel instrumented; fix pass; public repo delivered</td></tr>
+</table></div>
+<p><b>Not building in v1 — exactly 3 cuts (decided 2026-08-18):</b></p>
+<ul>
+<li><b>Player-as-boss mode</b> — the highest fun-ceiling idea in <code>ideas.md</code>, cut because it doubles the sync surface and the balance problem; v2+ candidate.</li>
+<li><b>The mintable Exorcist wearable</b> — v1 ships the in-scene charms and the visible 4/4 climb; the portable wearable mints at v2 (publication pipeline, fee and approval time don't fit 120 h, and no player can reach 4 Fridays inside v1's live window anyway). The promise stays; the mint moves.</li>
+<li><b>Hard-tier signature pattern elements</b> (the reserved two-ring volley, bomb bullets) — the v1 slice has 2 tiers on the baseline pattern language; signature elements return when deep tiers exist.</li>
+</ul>
+<p><b>Standing non-goals</b> (history in <code>decisions.md</code>):</p>
+<ul>
+<li>Never a fixed per-round yokai ladder, because it turns deep scrapbook pages into a grind disguised as a set (refused the ladder, 2026-08-14).</li>
+<li>Never a bolted-on retention system — every hook must be the loop's natural output (refused dailies 2026-08-14; refused the invite bribe 2026-08-17).</li>
+<li>Never a pattern winnable from one 2.5 m spot — the standing anti-camping law (refused camping, measured, 2026-08-17).</li>
+</ul>
+<div class="rule"><b>Top risk + fallback (decided 2026-08-18).</b> <b>Multiplayer sync of the shared pattern.</b> The entire twist — everyone survives the <i>same</i> pattern, your deflect punches a hole <i>others</i> dive through — dies if clients disagree about where bullets are. Syncing ~150 bullets as networked entities is infeasible. <b>Plan A (the design):</b> the pattern is deterministic — generated locally from a shared seed + synced round clock — and only sparse events cross the network (deflects ≈ 1 per player per 1.5 s, hits, bar damage, knockouts). <b>Plan B if event latency makes deflect holes arrive late on other screens:</b> widen the hole radius and add a grace window so a late hole still reads as help. <b>Plan C, the floor that keeps the game shippable:</b> shared bar and shared run, per-client pattern phase — the collective fight survives even if bullet-level simultaneity doesn't. Week 1's sync spike exists to find out which plan we live on before week 2's milestone.</div>
+<p><b>Live-ops cost:</b> both weekly events are automated by design — the board resets itself Sunday 00:00 UTC and the Great Haunting is one reusable template with no host — so a live week costs <b>≤1 person-day</b> (monitoring, the Discord announcement, and whatever the funnel says to tune).</p>
+
+<h2>10 · Success Criteria — what we will measure</h2>
+<p><b>The 2–3 numbers we will watch from Week 1 of being live</b> (decided 2026-08-19 — each one settles a parked hypothesis, none is a vanity metric):</p>
+<ul>
+<li><b>D2 return rate, split board-placers vs non-placers.</b> This is H2-04's behaviour half: placers must return at a visibly higher rate, or the Day-2 anchor (§4.1) is theatre. The split is the claim — a good raw D2 with no split proves nothing about the board.</li>
+<li><b>Median collective-run length</b> against the 8–15 min target — closes §3's standing TBD with live data (the greybox measured a wave, never a crowd's run).</li>
+<li><b>% of sessions that overlap ≥1 other player in the pit</b> — the crowd half of H2-02 and the precondition every §5 claim rests on. If this sits near zero, the social design is untested by reality whatever the other numbers say, and Friday's concentration mechanic becomes the priority lever.</li>
+</ul>
+<p class="dim">Tracked but not headlined: Friday 20:00 UTC concurrency vs the weekday baseline (H2-05) — meaningful only from week 2, once a Great Haunting has had its full week of rim warning.</p>
+<p><b>First-session funnel</b> (decided 2026-08-19 — every step is an event the loop already emits; instrumentation is timestamped logging, no new systems):</p>
+<p><b>Spawn</b> (walkway) → <b>drop into the pit</b> (first interaction — time-to-drop is logged, giving H1-04's "starts playing within 5 s" claim real numbers from real strangers) → <b>first landed deflect</b> (first reward: your hole in the pattern, the bar chips) → <b>first banish stood through</b> (first goal complete — already instrumented by design: it <i>is</i> the first scrapbook reveal) → <b>first mark on the board</b> (the bridge to the Day-2 anchor) → <b>session end</b>.</p>
+<p class="dim">Drop-offs map to fixes: losing players at spawn→drop is FTUE/spawn framing (§2); at drop→deflect it is the touch verb or the telegraph (§6); at banish→mark it means runs wipe before marks land (ramp tuning, §3).</p>
+<p><b>Pivot thresholds</b> (decided 2026-08-19 — pre-registered now so the week-3 call is mechanical; at v1 traffic the samples are small, so tripwires read direction and magnitude, not p-values):</p>
+<ul>
+<li><b>H2-04 fails</b> if board-placers' D2 return is not at least <b>1.5× non-placers'</b> over the first two live weeks. Consequence: the board is not the Day-2 anchor — §4.1 is rewritten around the scrapbook/charm climb before any v2 ask.</li>
+<li><b>The touch verb needs surgery</b> if fewer than <b>half of first sessions that drop into the pit ever land a deflect</b> (mobile split watched separately — H1-02's open on-device ratio meeting reality). Consequence: telegraph/assist tuning takes priority over new yokai content.</li>
+<li><b>Run-length band:</b> a median collective run <b>under 5 min</b> means the ramp is too cruel (wipes eat sessions before marks land); <b>over 20 min</b> means it is too soft (marks too cheap to defend). Either side of the 8–15 target triggers ramp retuning, not new systems.</li>
+</ul>
+<p class="dim">Standing rule: a tripwire firing means we <i>change the named thing</i> — it never licenses bolting on a new retention system (§9's standing non-goal).</p>
+
+<h2>11 · Team</h2>
+<div class="tablewrap"><table>
+<tr><th>Person</th><th>Role in this project</th><th>Hours/week</th><th>Links to past work</th></tr>
+<tr><td>Pravus</td><td>Everything — design, SDK7/TypeScript code, 3D &amp; art</td><td>~20 h/week</td><td><span class="tag tbd">TBD: owner to add 1–2 links before submission</span> — the strongest evidence is this project's own greybox: the H1/H2 experiment builds in this repo (working SDK7 scene, 150-projectile waves at 112 fps)</td></tr>
+</table></div>
+<p><b>Coverage check:</b> solo team. Code (SDK7/TypeScript) and design are covered — proven by the working greybox, not claimed. <b>3D &amp; art is the gap:</b> one person at ~20 h/week cannot also author ~30 yokai models. Plan (decided 2026-08-18): owner-built stylized low-poly yokai with emissive materials + open/CC assets for the environment where needed (declared in §12); the v1 roster is sized to that cost in §9. Total budget the plan must fit: <b>6 weeks × ~20 h ≈ 120 hours</b> — every §9 line is priced against this number.</p>
+
+<h2>12 · Deliverables &amp; Declaration</h2>
+<p><b>With the v1 round (6 weeks) we will deliver</b> (decided 2026-08-19 — priced against §9's slice, nothing here exceeds the plan):</p>
+<ul>
+<li><b>Fight in a live World:</b> drop into a persistent shared bullet-hell arena and banish escalating yokai with strangers — the full loop (weave, aimed deflect, shared life bar, knockout, wipe) running multiplayer, on desktop and mobile.</li>
+<li><b>Place and defend a mark</b> on the weekly haunting board — league brackets, Sunday 00:00 UTC reset, rim countdown.</li>
+<li><b>Fill a scrapbook</b> of the shipped roster — 3–4 regular yokai across 2 tiers plus the Great Haunting mega-yokai, silhouettes revealing permanently.</li>
+<li><b>Attend Friday's Great Haunting</b> and hang visible charms on their avatar — the 4/4 Exorcist climb underway (the mintable wearable itself is a declared v2 cut, §9).</li>
+</ul>
+<p>Plus the program's fixed non-player deliverable: <b>public repository at week 6</b>.</p>
+<p><b>Content &amp; IP declaration.</b> All yokai models, patterns and scene code are original owner-built work (stylized low-poly, §7 direction) and comply with Decentraland's Content Policy. The environment may use open/CC-licensed assets per §9's art plan — every third-party asset will be listed here with its license before submission. <span class="tag tbd">TBD: the concrete asset list — it cannot exist before the assets do; compiled at week 4's art pass</span> No third-party IP anywhere in the concept: "yokai" is folklore, and the comparables in §8 are references, not assets.</p>
+
+<h2>Appendix A · Hypothesis Log</h2>
+<p class="dim">Generated from the experiment files in <code>design/&lt;stage&gt;/</code> — status comes from each filename, verdicts from inside the files. Ordered by cheapest killing test: paper → desktop → beyond.</p>
+<div class="tablewrap"><table>
+<tr><th>ID</th><th>IF / THEN (falsifiable)</th><th>Source</th><th>Cheapest killing test</th><th>Status</th><th>Verdict / date</th><th>Tested on</th></tr>
+<tr><td>H2-04</td><td>IF the weekly small-league haunting board shows each player's deepest round, THEN players who place a mark on Day 1 return on Day 2 at a visibly higher rate than players who never placed</td><td>§4.1</td><td>League-size arithmetic on paper now; the behaviour claim needs the live v1 funnel (D2 return, placers vs non-placers)</td><td><span class="tag ok">validated</span></td><td>paper rung: brackets of 20 + remainder merge (single board &lt;40 placers/week); median player ~7 climbable marks in the expected case; behaviour half open for the v1 funnel · 2026-08-19</td><td>paper</td></tr>
+<tr><td>H2-06</td><td>IF the scrapbook shows silhouette→revealed progress per yokai, THEN players with a partially filled page (≥3 revealed) return within 7 days at a higher rate than players with none</td><td>§4.3</td><td>Reveal-pacing arithmetic on paper now (reveals per session — no yokai may be a wall); the behaviour claim needs the live v1 funnel</td><td><span class="tag ok">validated</span></td><td>paper rung: no wall (last regular page ~3 expected sessions), not spent day one at expected skill; fast-book fact recorded — pull past session ~3 rests on the mega page + content drops; behaviour half open for the v1 funnel · 2026-08-19</td><td>paper</td></tr>
+<tr><td>H1-01</td><td>IF the core verb is weave-through-a-bullet-pattern plus a timed deflect, THEN the owner voluntarily replays ≥3 consecutive greybox waves with no score, reward or goal attached</td><td>§3</td><td>Desktop Explorer greybox, owner self-test, ~30 min build</td><td><span class="tag ok">survived</span></td><td>kill-check held: 3 voluntary waves, quit by choice (owner self-test) · 2026-08-13</td><td>desktop</td></tr>
+<tr><td>H1-02</td><td>IF the deflect window is ≥0.4 s and bullets telegraph clearly, THEN the owner lands ≥7 of 10 intended deflects in a greybox wave</td><td>§3</td><td>Same greybox as H1-01, owner self-test (mobile-sensitive)</td><td><span class="tag ok">validated</span></td><td>12/13 intended deflects (92%), aimed verb, kill-check held (desktop) · mobile rung survived — kill-check held with touch accommodations, criterion not measured on device · 2026-08-19</td><td>desktop + mobile (self-test)</td></tr>
+<tr><td>H1-03</td><td>IF a wave renders ~150 simultaneous moving glowing projectiles, THEN the scene holds ≥60 fps in desktop Explorer on recommended hardware</td><td>§3</td><td>Instrumented desktop greybox, agent-measurable (mobile-sensitive)</td><td><span class="tag ok">validated</span></td><td>112 avg render FPS at 150 projectiles, 0 hiccups · 2026-08-13 · mobile 150-read deferred at owner request (informal: gameplay density ran fine on device) · 2026-08-19</td><td>desktop — mobile deferred (owner)</td></tr>
+<tr><td>H2-01</td><td>IF the yokai's life bar makes deflect the win verb, THEN an owner self-test round still plays as weaving punctuated by deflects — the owner does not camp the 1.5 s cooldown near the emitter</td><td>§3</td><td>Extend the H1 greybox with a life bar + deflect damage; owner self-test, one round</td><td><span class="tag dead">failed</span></td><td>kill-check did not hold: deliberate near-still camping carried the run to round 4 (3 banishes, 70% camp, 0 knockouts) · 2026-08-15</td><td>desktop</td></tr>
+<tr><td>H2-02</td><td>IF the greybox has the full loop structure (life bar, ramp, wipe reset, clean streak), THEN the owner voluntarily plays ≥10 waves across ≥2 runs in one sitting and quits by choice, not boredom</td><td>§3</td><td>Same H2 greybox build as H2-01, owner self-test (solo floor only — the crowd source needs v1 testers)</td><td><span class="tag ok">survived</span></td><td>kill-check held: 15 voluntary waves / 4 runs, quit by choice not boredom, would replay (owner self-test; crowd half open for v1) · 2026-08-17</td><td>desktop</td></tr>
+<tr><td>H2-03</td><td>IF the pattern law is redesigned so gaps sweep AND threat reaches every radius, THEN a deliberate camping round — one 2.5 m spot, rim included, micro-adjustments allowed, under the 3-hit rule — ends in a knockout before the yokai is banished</td><td>§3</td><td>Same H2 greybox with the new pattern law; owner repeats H2-01's rim-camp probe, judged by the camping meter</td><td><span class="tag ok">validated</span></td><td>zero majority-camped rounds banished (rim ×2 at 98% camp, close band at 55%) — knockout always first, machine-logged; kill-check held · 2026-08-17</td><td>desktop</td></tr>
+<tr><td>H2-07</td><td>IF one production yokai (model + materials + pattern config + scrapbook art) is built start-to-finish in v1 week 1, THEN it completes in ≤6 tracked hours</td><td>§9</td><td>Build the first production yokai in week 1 and track hours — no cheaper rung measures a build cost</td><td><span class="tag warn" style="color:var(--warn);border-color:var(--warn)">parked</span></td><td></td><td>—</td></tr>
+<tr><td>H1-04</td><td>IF the spawn frames the arena mid-pattern below the walkway, THEN 4 of 5 first-time testers start dodging within 5 s without being told anything</td><td>§2</td><td>H1-01 greybox + 3–5 first-time testers (fresh eyes required)</td><td><span class="tag dim" style="border-color:var(--dim)">deferred</span></td><td>deferred at stage-1 close — needs fresh eyes; v1 brings external testers · 2026-08-14</td><td>—</td></tr>
+<tr><td>H2-05</td><td>IF the Great Haunting runs every Friday 20:00 UTC with a week of rim warning, THEN Friday-evening concurrency visibly spikes above the weekday baseline</td><td>§4.3</td><td>Live v1 funnel — concurrency around Friday 20:00 vs weekday baseline; no cheaper rung exists for a calendar-behaviour claim</td><td><span class="tag warn" style="color:var(--warn);border-color:var(--warn)">parked</span></td><td></td><td>—</td></tr>
+</table></div>
+
+<p class="stamp" style="margin-top:3rem">rendered from shortGDD.md · v3 · 2026-08-19 · stage 3 (short GDD / ten-pager) closed · audit score 17/18 (R8 pending owner links) · .md is the source of truth</p>
+
 </div>
 </body>
 </html>
