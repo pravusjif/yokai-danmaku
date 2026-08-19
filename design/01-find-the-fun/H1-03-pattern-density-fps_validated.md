@@ -42,3 +42,5 @@ Rider: scene-tick rate at 150 bullets ≈ 35.7/40 target — same as at ~35 bull
 **Verdict:** validated — 112 avg render FPS at 150 simultaneous projectiles (pre-registered bar ≥60), two 10 s samples, 0 hiccup frames · 2026-08-13 · tested on: desktop
 
 Momentary minima dipped to 48–56 within the samples with zero hiccup frames — honest but comfortably inside the criterion, which was pre-registered on the average. Headroom is large enough that pattern design is not FPS-constrained at genre density on desktop. `Mobile-sensitive: yes`, desktop only → *mobile pending*; the QR mobile check re-tests by appending to this file with `DENSITY_TEST = 150` re-enabled.
+
+**mobile rung, pass 1: owner QR self-test · 2026-08-19 · no measurement.** Owner ran the scene on their phone during the H1-02 mobile pass; no FPS number was read (the broken mobile HUD took the session). Verdict unchanged; *mobile pending* stays true. Next mobile pass re-enables `DENSITY_TEST = 150` and reads min FPS against the program's 30 fps minimum-hardware bar.
